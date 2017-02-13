@@ -1,0 +1,21 @@
+{
+  "private": true,
+  "name": "apollo-client-error-template",
+  "version": "0.1.0",
+  "devDependencies": {
+    "react-scripts": "0.8.5"
+  },
+  "dependencies": {
+    "apollo-client": "^0.8.5",
+    "graphql": "^0.8.2",
+    "graphql-tag": "^1.2.4",
+    "react": "^15.4.2",
+    "react-apollo": "^0.10.1",
+    "react-dom": "^15.4.2"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom"
+  }
+}
