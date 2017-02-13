@@ -1,5 +1,7 @@
 # Apollo Client Error Template
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/calebmer/react-apollo-error-template.svg)](https://greenkeeper.io/)
+
 Welcome! If you are here then you were likely referred to this repo when reporting an error to [`apollographql/apollo-client`][1]. The core team is invested in making the best client for GraphQL possible, so when you hit an error it is important to the team that the error is resolved as soon as possible.
 
 Unfortunately, describing an error in GitHub is often not enough to truly understand the reported issue. By creating a small reproduction test case using this template repo the Apollo Client team will be able to identify and fix your error much faster then they could without.
