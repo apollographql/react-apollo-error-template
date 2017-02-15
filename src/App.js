@@ -5,11 +5,6 @@ import { graphql } from 'react-apollo';
 class App extends Component {
   render() {
     const { data: { loading, people } } = this.props;
-
-    if (loading) {
-      return <p>Loading…</p>;
-    }
-
     return (
       <main>
         <header>
@@ -26,13 +21,17 @@ class App extends Component {
             Currently the schema just serves a list of people with names and ids.
           </p>
         </header>
-        <ul>
-          {people.map(person => (
-            <li key={person.id}>
-              {person.name}
-            </li>
-          ))}
-        </ul>
+        {loading ? (
+          <p>Loading…</p>
+        ) : (
+          <ul>
+            {people.map(person => (
+              <li key={person.id}>
+                {person.name}
+              </li>
+            ))}
+          </ul>
+        )}
       </main>
     );
   }
