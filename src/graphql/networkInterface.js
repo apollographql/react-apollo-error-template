@@ -3,7 +3,7 @@ import { schema } from './schema';
 
 export const networkInterface = {
   query({ query, variables, operationName }) {
-    return delay(250).then(() => {
+    return delay(500).then(() => {
       return graphql(
         schema,
         print(query),
