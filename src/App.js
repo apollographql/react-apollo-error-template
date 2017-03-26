@@ -1,46 +1,35 @@
 import React, { Component } from 'react';
-import { gql, graphql } from 'react-apollo';
+import Video from './Video'
+import Companies from './Companies'
 
-class App extends Component {
+export default class App extends Component {
+  state = {
+    showCompanies: false,
+  }
+
   render() {
-    const { data: { loading, people } } = this.props;
+    const { showCompanies } = this.state;
     return (
       <main>
-        <header>
-          <h1>Apollo Client Error Template</h1>
-          <p>
-            This is a template that you can use to demonstrate an error in Apollo Client.
-            Edit the source code and watch your browser window reload with the changes.
-          </p>
-          <p>
-            The code which renders this component lives in <code>./src/App.js</code>.
-          </p>
-          <p>
-            The GraphQL schema is in <code>./src/graphql/schema</code>.
-            Currently the schema just serves a list of people with names and ids.
-          </p>
-        </header>
-        {loading ? (
-          <p>Loading…</p>
-        ) : (
-          <ul>
-            {people.map(person => (
-              <li key={person.id}>
-                {person.name}
-              </li>
-            ))}
-          </ul>
-        )}
+        <Video />
+        <h2>Always visible:</h2>
+        <p>
+          This list is fetched correctly from graphql because it's done before
+          the video player is initialized.
+        </p>
+        <Companies locale="en" />
+        <br/>
+
+        <h2>Toggled by user:</h2>
+        <p>
+          This list is toggled when the user clicks on the button. The request will not be sent
+          to graphql.
+        </p>
+        <button onClick={() => this.setState({ showCompanies: !showCompanies })}>
+          Toggle Companies
+        </button>
+        {showCompanies && <Companies />}
       </main>
     );
   }
 }
-
-export default graphql(
-  gql`{
-    people {
-      id
-      name
-    }
-  }`,
-)(App)
