@@ -28,7 +28,7 @@ export default class App extends Component {
         <button onClick={() => this.setState({ showCompanies: !showCompanies })}>
           Toggle Companies
         </button>
-        {showCompanies && <Companies />}
+        {showCompanies && <Companies locale="es" />}
       </main>
     );
   }
