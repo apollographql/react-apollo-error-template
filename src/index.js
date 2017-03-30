@@ -6,7 +6,15 @@ import { ApolloClient, ApolloProvider } from 'react-apollo';
 import { networkInterface } from './graphql/networkInterface';
 import App from './App';
 
-const client = new ApolloClient({ networkInterface });
+const client = new ApolloClient({
+  networkInterface,
+  dataIdFromObject: (result) => {
+    if (result.id && result.__typename) {
+      return result.__typename + result.id;
+    }
+    return null;
+  },
+});
 
 ReactDOM.render(
   <ApolloProvider client={client}><App /></ApolloProvider>,
