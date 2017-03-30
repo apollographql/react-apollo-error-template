@@ -6,44 +6,36 @@ import { Switch } from 'react-router';
 
 const Person = ({ person }) => (
   <div>
-    <span>{person.id ? person.id : 'nil'}: </span>
+    <span>{person.id}: </span>
     <strong>{person.name}</strong>
     <ul>
       {person.pets.map((pet, i) => (
         <li key={pet.id}>
           <span>{pet.id}: </span>
-          <strong>{pet.name}</strong>
-          <i>{pet.belonging.label}</i>
+          <strong>{pet.name} - </strong>
+          <i>{pet.belonging.label} (id: {pet.belonging.id || 'none'})</i>
         </li>
       ))}
     </ul>
   </div>
 );
 
-const PetFragment = gql`
-  fragment PetFragment on Pet {
-    id,
-    name
-  }
-`;
-
-const PersonWithId = graphql(
-  gql`
-    {
-      people {
+const WithId = graphql(
+  gql`{
+    people {
+      id,
+      name,
+      pets {
         id,
         name,
-        pets {
-          ...PetFragment
-          belonging {
-            id,
-            label
-          }
+        belonging {
+          id,
+          label
         }
       }
     }
-    ${PetFragment}
-  `,
+  }`,
+  // important fetchPolicy
   { options: { fetchPolicy: 'cache-and-network' } },
 )((props) => {
   const { data: { people = [], loading } } = props;
@@ -60,22 +52,21 @@ const PersonWithId = graphql(
   );
 });
 
-const PersonWithoutId = graphql(
-  gql`
-    {
-      people {
+const WithoutId = graphql(
+  gql`{
+    people {
+      id
+      name,
+      pets {
         id
-        name,
-        pets {
-          id
-          name
-          belonging {
-            label
-          }
+        name
+        belonging {
+          label
         }
       }
     }
-  `,
+  }`,
+  // important fetchPolicy
   { options: { fetchPolicy: 'cache-and-network' } },
 )((props) => {
   const { data: { people = [], loading } } = props;
@@ -92,22 +83,25 @@ const PersonWithoutId = graphql(
   );
 });
 
+const Code = ({ children }) => <pre style={{ display: 'inline', fontSize: '1.2em' }}>{children}</pre>;
+
 class App extends Component {
   render() {
     return (
       <BrowserRouter>
-        <main>
+        <main style={{ maxWidth: '50%', margin: '0 auto', }}>
           <header>
             <h1>Apollo Client Error Template</h1>
-            <ul>
-              <li><Link to="/">Without Belonging ID</Link></li>
-              <li><Link to="/withId">With Belonging ID</Link></li>
-            </ul>
+            <p>There are two queries. The error is for the <Code>belonging</Code> object, which is 3 levels deep (<Code>person -> pet -> belonging</Code>). The first query request the <Code>belonging</Code> by specifying its <Code>id</Code> and <Code>label</Code> fields. However, the second query requests the belonging with only the <Code>label</Code> field. When you mount the component using the second query (using react router <Code>Switch</Code> to demonstrate), it gets stuck in a loading state, never updating the component.</p>
+            <ol>
+              <li><Link to="/">With Belonging ID (Base)</Link></li>
+              <li><Link to="/noId">Without Belonging ID</Link></li>
+            </ol>
           </header>
           <section>
             <Switch>
-              <Route exact path="/" component={PersonWithoutId} />
-              <Route path="/withId" component={PersonWithId} />
+              <Route exact path="/" component={WithId} />
+              <Route path="/noId" component={WithoutId} />
             </Switch>
           </section>
         </main>

@@ -8,12 +8,6 @@ import App from './App';
 
 const client = new ApolloClient({
   networkInterface,
-  dataIdFromObject: (result) => {
-    if (result.id && result.__typename) {
-      return result.__typename + result.id;
-    }
-    return null;
-  },
 });
 
 ReactDOM.render(
