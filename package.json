@@ -3,6 +3,7 @@
   "name": "apollo-client-error-template",
   "version": "0.1.0",
   "devDependencies": {
+    "gh-pages": "^1.0.0",
     "react-scripts": "1.0.16"
   },
   "dependencies": {
@@ -18,6 +19,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test --env=jsdom"
+    "test": "react-scripts test --env=jsdom",
+    "deploy": "PUBLIC_URL=/react-apollo-error-template/$(git symbolic-ref --short HEAD) npm run build && gh-pages-clean && gh-pages -d build --dest $(git symbolic-ref --short HEAD) --remote"
   }
 }
