@@ -13,3 +13,9 @@ To make changes in the GraphQL schema make sure to look at the `./src/graphql` f
 [1]: https://github.com/apollographql/apollo-client
 [2]: https://github.com/facebookincubator/create-react-app
 [3]: http://graphql.org/graphql-js/
+
+# Deploy to Github Pages
+You can deploy your built error demo to gh-pages branch by running:
+```
+npm run deploy YOUR_GIT_REMOTE
+```
