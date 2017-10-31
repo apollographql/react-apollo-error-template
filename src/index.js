@@ -1,14 +1,22 @@
-import './index.css';
+import "./index.css";
 
-import React from 'react';
-import ReactDOM from 'react-dom';
-import { ApolloClient, ApolloProvider } from 'react-apollo';
-import { networkInterface } from './graphql/networkInterface';
-import App from './App';
+import React from "react";
+import { render } from "react-dom";
+import { ApolloClient } from "apollo-client";
+import { ApolloProvider } from "react-apollo";
+import { InMemoryCache } from "apollo-cache-inmemory";
 
-const client = new ApolloClient({ networkInterface });
+import { link } from "./graphql/link";
+import App from "./App";
 
-ReactDOM.render(
-  <ApolloProvider client={client}><App /></ApolloProvider>,
-  document.getElementById('root'),
+const client = new ApolloClient({
+  cache: new InMemoryCache(),
+  link,
+});
+
+render(
+  <ApolloProvider client={client}>
+    <App />
+  </ApolloProvider>,
+  document.getElementById("root")
 );
