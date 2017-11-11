@@ -10,7 +10,15 @@ import { link } from "./graphql/link";
 import App from "./App";
 
 const client = new ApolloClient({
-  cache: new InMemoryCache(),
+  cache: new InMemoryCache({
+    dataIdFromObject: (result) => {
+      if (result.id && result.__typename) {
+        return result.__typename + result.id;
+      }
+      return null;
+    },
+    addTypename: true,
+  }),
   link,
 });
 
