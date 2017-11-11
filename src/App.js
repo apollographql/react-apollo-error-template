@@ -1,8 +1,34 @@
 import React, { Component } from "react";
-import { graphql } from "react-apollo";
+import { graphql, withApollo } from "react-apollo";
 import gql from "graphql-tag";
 
 class App extends Component {
+  static defaultProps = {
+    onClick: () => {},
+  };
+
+  handleClick = () => {
+    const people = this.props.data.people;
+    const person = people[0];
+    const newPotatoes = person.potatoes.filter(p => p.id !== "1");
+    this.props.client.writeFragment({
+      id: `Person${person.id}`,
+      fragmentName: 'filterOutAPotatoe',
+      fragment: gql`
+        fragment filterOutAPotatoe on Person {
+          potatoes {
+            id
+          }
+        }
+      `,
+      data: {
+        potatoes: newPotatoes,
+        __typename: 'Person',
+      },
+    });
+    this.props.onClick();
+  };
+
   render() {
     const { data: { loading, people } } = this.props;
     return (
@@ -24,25 +50,56 @@ class App extends Component {
             ids.
           </p>
         </header>
-        {loading ? (
-          <p>Loading…</p>
+        {loading || !people ? (
+          <p>{loading ? 'Loading…' : `ERROR NO PEOPLE: ${JSON.stringify(this.props.data)}`}</p>
         ) : (
           <ul>
-            {people.map(person => <li key={person.id}>{person.name}</li>)}
+            {people.map(person =>
+              <li key={person.id}>
+                {person.name}
+                <ul>
+                  <li>Potatoes: </li>
+                   {(person.potatoes || []).map(p =>
+                     <li key={p.id}>{p.type}</li>
+                   )}
+                </ul>
+              </li>)}
+            <li><button type="button" onClick={this.handleClick}>Click me!</button></li>
+            <li>is clicked? {this.props.clicked}</li>
           </ul>
         )}
+        {}
       </main>
     );
   }
 }
 
-export default graphql(
+const AppWithData = withApollo(graphql(
   gql`
     query ErrorTemplate {
       people {
         id
         name
+        potatoes {
+          id
+          type
+        }
       }
     }
   `
-)(App);
+)(App));
+
+// Had to add a wrapper, otherwise it didn't trigger a rerender! <-- this is super suspicious on what might be the bug
+// You can try it without the wrapper by just exporting AppWithData and commenting out this one.
+export default class Wrapper extends Component {
+  state = { clicked: false };
+  render() {
+    return (
+      <AppWithData
+        clicked={this.state.clicked}
+        onClick={() => this.setState({ clicked: true })}
+      />
+    );
+  }
+}
+
