@@ -3,23 +3,29 @@
   "name": "apollo-client-error-template",
   "version": "0.1.0",
   "devDependencies": {
-    "gh-pages": "^1.1.0",
-    "react-scripts": "1.1.4"
+    "gh-pages": "^2.0.1",
+    "react-scripts": "2.1.8"
   },
   "dependencies": {
-    "apollo-cache-inmemory": "^1.2.2",
-    "apollo-client": "^2.3.2",
-    "apollo-link": "^1.2.2",
-    "graphql": "^0.13.2",
-    "graphql-tag": "^2.9.2",
-    "react": "^16.4.0",
-    "react-apollo": "2.1.4",
-    "react-dom": "^16.4.0"
+    "apollo-cache-inmemory": "^1.5.1",
+    "apollo-client": "^2.5.1",
+    "apollo-link": "^1.2.11",
+    "graphql": "^14.2.0",
+    "graphql-tag": "^2.10.1",
+    "react": "^16.8.6",
+    "react-apollo": "2.5.3",
+    "react-dom": "^16.8.6"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "deploy": "PUBLIC_URL=/react-apollo-error-template/$(git symbolic-ref --short HEAD) npm run build && gh-pages-clean && gh-pages -d build --dest $(git symbolic-ref --short HEAD) --remote"
-  }
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
 }
