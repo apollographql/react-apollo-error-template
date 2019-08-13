@@ -1,4 +1,4 @@
-# Apollo Client Error Template
+# Apollo Client Issue Reproduction
 
 Welcome! If you are here then you were likely referred to this repo when reporting an error to [`apollographql/apollo-client`][1]. The core team is invested in making the best client for GraphQL possible, so when you hit an error it is important to the team that the error is resolved as soon as possible.
 
@@ -19,11 +19,3 @@ To make changes in the GraphQL schema make sure to look at the `./src/graphql` f
 3. Start the development server with `npm start`.
 4. Make the changes that will reproduce this error locally.
 5. When ready, push your changes back to GitHub and let the `apollo-client` team know where they can be found.
-
-# Deploy to Github Pages
-
-You can deploy your built error demo to a `gh-pages` branch by running:
-
-```
-npm run deploy YOUR_GIT_REMOTE
-```

@@ -2,6 +2,14 @@ import { graphql, print } from "graphql";
 import { ApolloLink, Observable } from "apollo-link";
 import { schema } from "./schema";
 
+function delay(ms) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve();
+    }, ms);
+  });
+}
+
 export const link = new ApolloLink(operation => {
   return new Observable(observer => {
     const { query, operationName, variables } = operation;
@@ -17,10 +25,3 @@ export const link = new ApolloLink(operation => {
   });
 });
 
-function delay(ms) {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve();
-    }, ms);
-  });
-}

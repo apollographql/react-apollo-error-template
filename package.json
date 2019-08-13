@@ -1,26 +1,24 @@
 {
   "private": true,
   "name": "apollo-client-error-template",
-  "version": "0.1.0",
-  "devDependencies": {
-    "gh-pages": "^2.0.1",
-    "react-scripts": "2.1.8"
-  },
+  "version": "1.0.0",
   "dependencies": {
-    "apollo-cache-inmemory": "^1.5.1",
-    "apollo-client": "^2.5.1",
-    "apollo-link": "^1.2.11",
-    "graphql": "^14.2.0",
+    "@apollo/react-hooks": "^3.0.0",
+    "apollo-cache-inmemory": "^1.6.3",
+    "apollo-client": "^2.6.4",
+    "apollo-link": "^1.2.12",
+    "graphql": "^14.4.2",
     "graphql-tag": "^2.10.1",
-    "react": "^16.8.6",
-    "react-apollo": "2.5.3",
-    "react-dom": "^16.8.6"
+    "react": "^16.9.0",
+    "react-dom": "^16.9.0"
+  },
+  "devDependencies": {
+    "react-scripts": "3.1.0"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test --env=jsdom",
-    "deploy": "PUBLIC_URL=/react-apollo-error-template/$(git symbolic-ref --short HEAD) npm run build && gh-pages-clean && gh-pages -d build --dest $(git symbolic-ref --short HEAD) --remote"
+    "test": "react-scripts test --env=jsdom"
   },
   "browserslist": [
     ">0.2%",
