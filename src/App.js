@@ -1,5 +1,5 @@
 import React from "react";
-import { Query } from "react-apollo";
+import { useQuery } from "@apollo/react-hooks";
 import gql from "graphql-tag";
 
 const ALL_PEOPLE = gql`
@@ -11,35 +11,28 @@ const ALL_PEOPLE = gql`
   }
 `;
 
-const App = () => (
-  <main>
-    <h1>Apollo Client Error Template</h1>
-    <p>
-      This is a template that you can use to demonstrate an error in
-      Apollo Client. Edit the source code and watch your browser window
-      reload with the changes.
-    </p>
-    <p>
-      The code which renders this component lives in{" "}
-      <code>./src/App.js</code>.
-    </p>
-    <p>
-      The GraphQL schema is in <code>./src/graphql/schema</code>.
-      Currently the schema just serves a list of people with names and
-      ids.
-    </p>
-    <Query query={ALL_PEOPLE}>
-      {({ loading, data: { people } }) =>
-        loading
-          ? <p>Loading…</p>
-          : (
-            <ul>
-              {people.map(person => <li key={person.id}>{person.name}</li>)}
-            </ul>
-          )
-      }
-    </Query>
-  </main>
-);
+export default function App() {
+  const {
+    loading,
+    data: { people }
+  } = useQuery(ALL_PEOPLE);
 
-export default App;
+  return (
+    <main>
+      <h1>Apollo Client Issue Reproduction</h1>
+      <p>
+        This application can be used to demonstrate an error in Apollo Client.
+      </p>
+      <h2>Names</h2>
+      {loading ? (
+        <p>Loading…</p>
+      ) : (
+        <ul>
+          {people.map(person => (
+            <li key={person.id}>{person.name}</li>
+          ))}
+        </ul>
+      )}
+    </main>
+  );
+}
