@@ -14,7 +14,7 @@ const ALL_PEOPLE = gql`
 export default function App() {
   const {
     loading,
-    data: { people }
+    data
   } = useQuery(ALL_PEOPLE);
 
   return (
@@ -28,7 +28,7 @@ export default function App() {
         <p>Loading…</p>
       ) : (
         <ul>
-          {people.map(person => (
+          {data.people.map(person => (
             <li key={person.id}>{person.name}</li>
           ))}
         </ul>
