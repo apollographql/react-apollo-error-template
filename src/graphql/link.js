@@ -1,5 +1,5 @@
 import { graphql, print } from "graphql";
-import { ApolloLink, Observable } from "apollo-link";
+import { ApolloLink, Observable } from "@apollo/client";
 import { schema } from "./schema";
 
 function delay(ms) {
@@ -24,4 +24,3 @@ export const link = new ApolloLink(operation => {
       .catch(observer.error.bind(observer));
   });
 });
-
