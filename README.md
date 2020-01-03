@@ -15,6 +15,12 @@ To make changes in the GraphQL schema make sure to look at the `./src/graphql` f
 # Reproduction Creation Steps
 
 1. Fork this repository to your GitHub account.
+2. If you would like to start with an Apollo Client 3.0 (beta) application, clone or checkout the `ac3` branch:
+  ```sh
+  git clone --branch ac3 git@github.com:apollographql/react-apollo-error-template.git
+  # Or, after cloning the repository:
+  git checkout -t origin/ac3
+  ```
 2. After cloning, install all dependencies with `npm install`.
 3. Start the development server with `npm start`.
 4. Make the changes that will reproduce this error locally.
