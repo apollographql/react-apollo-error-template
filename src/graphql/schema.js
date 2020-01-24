@@ -27,6 +27,18 @@ const QueryType = new GraphQLObjectType({
       type: new GraphQLList(PersonType),
       resolve: () => peopleData,
     },
+    person: {
+      type: PersonType,
+      resolve(_parent, args) {
+        return args.id && peopleData.find(
+          p => String(p.id) === String(args.id));
+      },
+      args: {
+        id: {
+          type: GraphQLID,
+        },
+      }
+    }
   },
 });
 

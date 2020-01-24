@@ -10,11 +10,22 @@ const ALL_PEOPLE = gql`
   }
 `;
 
+const ONE_PERSON = gql`
+  query OnePerson($id: ID) {
+    person(id: $id) {
+      id
+      name
+    }
+  }
+`;
+
 export default function App() {
-  const {
-    loading,
-    data
-  } = useQuery(ALL_PEOPLE);
+  const allPeople = useQuery(ALL_PEOPLE);
+
+  const id = 2;
+  const { data: { person } = {}, loading } = useQuery(ONE_PERSON, {
+    variables: { id },
+  });
 
   return (
     <main>
@@ -23,13 +34,25 @@ export default function App() {
         This application can be used to demonstrate an error in Apollo Client.
       </p>
       <h2>Names</h2>
-      {loading ? (
+      {allPeople.loading || loading ? (
         <p>Loading…</p>
       ) : (
         <ul>
-          {data.people.map(person => (
-            <li key={person.id}>{person.name}</li>
-          ))}
+          <li>
+            All people:
+            <ul>
+              {allPeople.data.people.map(person => (
+                <li key={person.id}>{person.name}</li>
+              ))}
+            </ul>
+          </li>
+          <li>
+            Person {id}:
+            <ul>
+              <li>{person.name}</li>
+              <li><pre>{JSON.stringify(person)}</pre></li>
+            </ul>
+          </li>
         </ul>
       )}
     </main>
