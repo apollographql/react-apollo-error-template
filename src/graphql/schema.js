@@ -8,16 +8,17 @@ import {
 
 const PersonType = new GraphQLObjectType({
   name: 'Person',
-  fields: {
+  fields: () => ({
     id: { type: GraphQLID },
     name: { type: GraphQLString },
-  },
+    friends: { type: new GraphQLList(PersonType) },
+  }),
 });
 
 const peopleData = [
-  { id: 1, name: 'John Smith' },
-  { id: 2, name: 'Sara Smith' },
-  { id: 3, name: 'Budd Deey' },
+  { id: 1, name: 'John Smith', friends: [] },
+  { id: 2, name: 'Sara Smith', friends: [] },
+  { id: 3, name: 'Budd Deey', friends: [] },
 ];
 
 const QueryType = new GraphQLObjectType({
@@ -25,9 +26,52 @@ const QueryType = new GraphQLObjectType({
   fields: {
     people: {
       type: new GraphQLList(PersonType),
-      resolve: () => peopleData,
+      resolve: () => {
+        return peopleData;
+      },
     },
   },
 });
 
-export const schema = new GraphQLSchema({ query: QueryType });
+const MutationType = new GraphQLObjectType({
+  name: 'Mutation',
+  fields: {
+    addPerson: {
+      type: PersonType,
+      args: { 
+        name: { type: GraphQLString },
+      },
+      resolve: function (_, { name }) {
+        const person = {
+          id: ++peopleData[peopleData.length - 1].id,
+          name,
+          friends: [],
+        };
+
+        peopleData.push(person);
+        return person;
+      }
+    },
+    addFriend: {
+      type: PersonType,
+      args: {
+        id: { type: GraphQLID },
+        friendId: { type: GraphQLID },
+      },
+      resolve: (_, args) => {
+        const friend = peopleData.find(person => person.id === parseInt(args.friendId, 10));
+
+        for (const person of peopleData) {
+          if (person.id === parseInt(args.id, 10)) {
+            person.friends = [...person.friends, friend];
+            break;
+          }
+        }
+        
+        return friend;
+      },
+    },
+  },
+});
+
+export const schema = new GraphQLSchema({ query: QueryType, mutation: MutationType });
