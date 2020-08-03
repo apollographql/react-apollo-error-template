@@ -64,6 +64,7 @@ const MutationType = new GraphQLObjectType({
         for (const person of peopleData) {
           if (person.id === parseInt(args.id, 10)) {
             person.friends = [...person.friends, friend];
+            friend.friends = [...friend.friends, person];
             break;
           }
         }

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Fragment } from "react";
 import { gql, useQuery, useMutation } from "@apollo/client";
 
 const ALL_PEOPLE = gql`
@@ -6,6 +6,10 @@ const ALL_PEOPLE = gql`
     people {
       id
       name
+      friends {
+        id
+        name
+      }
     }
   }
 `;
@@ -15,6 +19,10 @@ const ADD_PERSON = gql`
     addPerson(name: $name) {
       id
       name
+      friends {
+        id
+        name
+      }
     }
   }
 `;
@@ -35,12 +43,48 @@ const ADD_FRIEND = gql`
 export default function App() {
   const {
     loading,
-    data
+    data,
+    refetch,
   } = useQuery(ALL_PEOPLE);
   
   const [addPerson] = useMutation(ADD_PERSON);
-  const [addFriend] = useMutation(ADD_FRIEND);
-  console.log(data);
+  const [addFriend] = useMutation(ADD_FRIEND, {
+    optimisticResponse: {
+      __typename: "Mutation",
+      addFriend: {
+        id: "2",
+        __typename: "Person",
+        name: "Sara Smith",
+        friends: [{ 
+          __typename: "Person",
+          id: "3"
+        }],
+      }
+    },
+    update: (cache, { data: { addFriend } }) => {
+      cache.modify({
+        id: cache.identify(addFriend.friends[0]),
+        fields: {
+          friends: existing => {
+            const newFriend = cache.writeFragment({
+              id: cache.identify(addFriend),
+              fragment: gql`
+                fragment NewFriend on Person {
+                  id
+                  name
+                  friends
+                }
+              `,
+              data,
+            });
+
+            return [...existing, newFriend];
+          }
+        }
+      });
+    }
+  }); 
+
   return (
     <main>
       <h1>Apollo Client Issue Reproduction</h1>
@@ -49,7 +93,14 @@ export default function App() {
       </p>
       <button
         onClick={() => {
-          addPerson({ variables: { name: 'Taylor Swift' } });
+          refetch();
+        }}
+      >
+        Refetch
+      </button>
+      <button
+        onClick={() => {
+          addPerson({ variables: { name: 'Margaret Hamilton' } });
         }}
       >
         Add person
@@ -72,7 +123,10 @@ export default function App() {
       ) : (
         <ul>
           {data?.people.map(person => (
-            <li key={person.id}>{person.name}</li>
+            <Fragment>
+              <li key={person.id}>{person.name}</li>
+              {person.friends.length > 0 && person.friends.map(friend => <li key={friend.id}>Friend: {friend.name}</li>)}
+            </Fragment>
           ))}
         </ul>
       )}
