@@ -1,5 +1,5 @@
-import React from "react";
-import { gql, useQuery } from "@apollo/client";
+import React, { useState } from "react";
+import { gql, useQuery, useMutation } from "@apollo/client";
 
 const ALL_PEOPLE = gql`
   query AllPeople {
@@ -10,11 +10,24 @@ const ALL_PEOPLE = gql`
   }
 `;
 
+const ADD_PERSON = gql`
+  mutation AddPerson($name: String) {
+    addPerson(name: $name) {
+      id
+      name
+    }
+  }
+`;
+
 export default function App() {
+  const [name, setName] = useState('');
   const {
     loading,
-    data
+    data,
+    refetch,
   } = useQuery(ALL_PEOPLE);
+
+  const [addPerson] = useMutation(ADD_PERSON);
 
   return (
     <main>
@@ -22,12 +35,29 @@ export default function App() {
       <p>
         This application can be used to demonstrate an error in Apollo Client.
       </p>
+      <div className="add-person">
+        <label htmlFor="name">Name</label>
+        <input 
+          type="text" 
+          name="name" 
+          value={name}
+          onChange={evt => setName(evt.target.value)}
+        />
+        <button
+          onClick={() => {
+            addPerson({ variables: { name } }).then(refetch);
+            setName('');
+          }}
+        >
+          Add person
+        </button>
+      </div>
       <h2>Names</h2>
       {loading ? (
         <p>Loading…</p>
       ) : (
         <ul>
-          {data.people.map(person => (
+          {data?.people.map(person => (
             <li key={person.id}>{person.name}</li>
           ))}
         </ul>
