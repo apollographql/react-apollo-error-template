@@ -62,8 +62,12 @@ export default function App() {
       }
     },
     update: (cache, { data: { addFriend } }) => {
+      console.log(addFriend);
       cache.modify({
-        id: cache.identify(addFriend.friends[0]),
+        id: cache.identify({
+          __typename: "Person",
+          id: "3",
+        }),
         fields: {
           friends: existing => {
             const newFriend = cache.writeFragment({

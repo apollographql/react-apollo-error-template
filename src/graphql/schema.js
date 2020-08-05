@@ -61,14 +61,14 @@ const MutationType = new GraphQLObjectType({
       resolve: (_, args) => {
         const friend = peopleData.find(person => person.id === parseInt(args.friendId, 10));
 
-        for (const person of peopleData) {
-          if (person.id === parseInt(args.id, 10)) {
-            person.friends = [...person.friends, friend];
-            friend.friends = [...friend.friends, person];
-            break;
-          }
-        }
-        
+        // for (const person of peopleData) {
+        //   if (person.id === parseInt(args.id, 10)) {
+        //     person.friends = [...person.friends, friend];
+        //     friend.friends = [...friend.friends, person];
+        //     break;
+        //   }
+        // }
+
         return friend;
       },
     },
