@@ -24,10 +24,24 @@ export default function App() {
   const {
     loading,
     data,
-    refetch,
   } = useQuery(ALL_PEOPLE);
 
-  const [addPerson] = useMutation(ADD_PERSON);
+  const [addPerson] = useMutation(ADD_PERSON, {
+    update: (cache, { data: { addPerson: addPersonData } }) => {
+      const peopleResult = cache.readQuery({ query: ALL_PEOPLE });
+
+      cache.writeQuery({
+        query: ALL_PEOPLE,
+        data: {
+          ...peopleResult,
+          people: [
+            ...peopleResult.people,
+            addPersonData,
+          ],
+        },
+      });
+    },
+  });
 
   return (
     <main>
@@ -45,7 +59,7 @@ export default function App() {
         />
         <button
           onClick={() => {
-            addPerson({ variables: { name } }).then(refetch);
+            addPerson({ variables: { name } });
             setName('');
           }}
         >
