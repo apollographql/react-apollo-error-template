@@ -30,4 +30,25 @@ const QueryType = new GraphQLObjectType({
   },
 });
 
-export const schema = new GraphQLSchema({ query: QueryType });
+const MutationType = new GraphQLObjectType({
+  name: 'Mutation',
+  fields: {
+    addPerson: {
+      type: PersonType,
+      args: { 
+        name: { type: GraphQLString },
+      },
+      resolve: function (_, { name }) {
+        const person = {
+          id: peopleData[peopleData.length - 1].id + 1,
+          name,
+        };
+
+        peopleData.push(person);
+        return person;
+      }
+    },
+  },
+});
+
+export const schema = new GraphQLSchema({ query: QueryType, mutation: MutationType });
