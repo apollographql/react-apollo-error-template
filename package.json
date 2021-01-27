@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "dependencies": {
     "@apollo/client": "^3.2.5",
-    "graphql": "^15.4.0",
+    "graphql": "^15.5.0",
     "react": "^16.14.0",
     "react-dom": "^16.14.0"
   },
