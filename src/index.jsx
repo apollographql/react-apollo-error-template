@@ -76,7 +76,7 @@ const link = new ApolloLink(operation => {
       observer.next(result);
       observer.complete();
     } catch (err) {
-      observer.error.bind(observer);
+      observer.error(err);
     }
   });
 });
