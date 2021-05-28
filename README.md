@@ -6,7 +6,7 @@ Unfortunately, describing an error in GitHub is often not enough to truly unders
 
 This repo was created with [`create-react-app`][2] for a great developer experience. If you are not using React then a small reproduction case with your framework of choice would go a long way.
 
-To make changes in the GraphQL schema make sure to look at the `./src/graphql` folder where we define a GraphQL schema using [GraphQL.js][3] which will run in the browser.
+To make changes in the GraphQL schema make sure to look at the `./src/index.jsx` file where we define a GraphQL schema using [GraphQL.js][3] which will run in the browser.
 
 [1]: https://github.com/apollographql/apollo-client
 [2]: https://github.com/facebookincubator/create-react-app
