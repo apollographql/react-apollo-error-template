@@ -3,9 +3,11 @@ import {
   GraphQLSchema,
   GraphQLObjectType,
   GraphQLID,
+  GraphQLFloat,
   GraphQLString,
   GraphQLList,
 } from 'graphql';
+
 const PersonType = new GraphQLObjectType({
   name: 'Person',
   fields: {
@@ -26,6 +28,11 @@ const QueryType = new GraphQLObjectType({
     people: {
       type: new GraphQLList(PersonType),
       resolve: () => peopleData,
+    },
+
+    timestamp: {
+      type: GraphQLFloat,
+      resolve: () => Date.now(),
     },
   },
 });
@@ -63,6 +70,7 @@ function delay(wait) {
 const link = new ApolloLink(operation => {
   return new Observable(async observer => {
     const { query, operationName, variables } = operation;
+    console.log('polling');
     await delay(300);
     try {
       const result = await graphql(
@@ -112,29 +120,20 @@ const ADD_PERSON = gql`
   }
 `;
 
-function App() {
-  const [name, setName] = useState('');
-  const {
-    loading,
-    data,
-  } = useQuery(ALL_PEOPLE);
+const POLL = gql`
+  query Poll {
+    timestamp
+  }
+`;
 
-  const [addPerson] = useMutation(ADD_PERSON, {
-    update: (cache, { data: { addPerson: addPersonData } }) => {
-      const peopleResult = cache.readQuery({ query: ALL_PEOPLE });
-
-      cache.writeQuery({
-        query: ALL_PEOPLE,
-        data: {
-          ...peopleResult,
-          people: [
-            ...peopleResult.people,
-            addPersonData,
-          ],
-        },
-      });
-    },
+export function App() {
+  const [shouldPoll, setShouldPoll] = useState(false);
+  const {loading, data} = useQuery(POLL, {
+    skip: !shouldPoll,
+    pollInterval: 1000,
   });
+
+  console.log({loading, data});
 
   return (
     <main>
@@ -143,32 +142,17 @@ function App() {
         This application can be used to demonstrate an error in Apollo Client.
       </p>
       <div className="add-person">
-        <label htmlFor="name">Name</label>
-        <input
-          type="text"
-          name="name"
-          value={name}
-          onChange={evt => setName(evt.target.value)}
-        />
-        <button
-          onClick={() => {
-            addPerson({ variables: { name } });
-            setName('');
-          }}
-        >
-          Add person
+        <button onClick={() => setShouldPoll((v) => !v)}>
+          {shouldPoll ? "Turn polling off" : "Turn polling on"}
         </button>
       </div>
-      <h2>Names</h2>
-      {loading ? (
-        <p>Loading…</p>
-      ) : (
-        <ul>
-          {data?.people.map(person => (
-            <li key={person.id}>{person.name}</li>
-          ))}
-        </ul>
-      )}
+      {
+        loading
+        ? <div>Loading...</div>
+        : !shouldPoll
+        ? <div>Skipping...</div>
+        : <div>{data.timestamp}</div>
+      }
     </main>
   );
 }
