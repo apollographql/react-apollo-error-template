@@ -98,7 +98,6 @@ import {
   InMemoryCache,
   gql,
   useQuery,
-  useMutation,
 } from "@apollo/client";
 import "./index.css";
 
@@ -127,13 +126,10 @@ const POLL = gql`
 `;
 
 export function App() {
-  const [shouldPoll, setShouldPoll] = useState(false);
-  const {loading, data} = useQuery(POLL, {
-    skip: !shouldPoll,
+  const [shouldPoll, setShouldPoll] = useState(true);
+  const {loading, data, startPolling, stopPolling} = useQuery(POLL, {
     pollInterval: 1000,
   });
-
-  console.log({loading, data});
 
   return (
     <main>
@@ -142,16 +138,26 @@ export function App() {
         This application can be used to demonstrate an error in Apollo Client.
       </p>
       <div className="add-person">
-        <button onClick={() => setShouldPoll((v) => !v)}>
+        <button onClick={() => {
+          setShouldPoll((v) => {
+            if (v) {
+              console.log('stopping polling');
+              stopPolling();
+            } else {
+              console.log('starting polling');
+              startPolling();
+            }
+
+            return !v;
+          });
+        }}>
           {shouldPoll ? "Turn polling off" : "Turn polling on"}
         </button>
       </div>
       {
         loading
         ? <div>Loading...</div>
-        : !shouldPoll
-        ? <div>Skipping...</div>
-        : <div>{data.timestamp}</div>
+        : <div>{data?.timestamp}</div>
       }
     </main>
   );
@@ -159,12 +165,14 @@ export function App() {
 
 const client = new ApolloClient({
   cache: new InMemoryCache(),
-  link
+  link,
 });
 
 render(
-  <ApolloProvider client={client}>
-    <App />
-  </ApolloProvider>,
+  <React.StrictMode>
+    <ApolloProvider client={client}>
+      <App />
+    </ApolloProvider>
+  </React.StrictMode>,
   document.getElementById("root")
 );
