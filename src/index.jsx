@@ -1,69 +1,69 @@
-/*** SCHEMA ***/
+import React from "react";
+import { render } from "react-dom";
 import {
-  GraphQLSchema,
-  GraphQLObjectType,
   GraphQLID,
-  GraphQLString,
   GraphQLList,
-} from 'graphql';
-const PersonType = new GraphQLObjectType({
-  name: 'Person',
-  fields: {
-    id: { type: GraphQLID },
-    name: { type: GraphQLString },
-  },
-});
-
-const peopleData = [
-  { id: 1, name: 'John Smith' },
-  { id: 2, name: 'Sara Smith' },
-  { id: 3, name: 'Budd Deey' },
-];
-
-const QueryType = new GraphQLObjectType({
-  name: 'Query',
-  fields: {
-    people: {
-      type: new GraphQLList(PersonType),
-      resolve: () => peopleData,
-    },
-  },
-});
-
-const MutationType = new GraphQLObjectType({
-  name: 'Mutation',
-  fields: {
-    addPerson: {
-      type: PersonType,
-      args: {
-        name: { type: GraphQLString },
-      },
-      resolve: function (_, { name }) {
-        const person = {
-          id: peopleData[peopleData.length - 1].id + 1,
-          name,
-        };
-
-        peopleData.push(person);
-        return person;
-      }
-    },
-  },
-});
-
-const schema = new GraphQLSchema({ query: QueryType, mutation: MutationType });
-
-/*** LINK ***/
+  GraphQLObjectType,
+  GraphQLSchema
+} from "graphql";
 import { graphql, print } from "graphql";
 import { ApolloLink, Observable } from "@apollo/client";
+import {
+  ApolloClient,
+  InMemoryCache,
+  ApolloProvider,
+  gql,
+  useQuery
+} from "@apollo/client";
+import "./index.css";
+
+const ChildType = new GraphQLObjectType({
+  name: "ChildType",
+  fields: {
+    id: { type: GraphQLID }
+  }
+});
+
+const ParentType = new GraphQLObjectType({
+  name: "ParentType",
+  fields: {
+    id: { type: GraphQLID },
+    children: { type: new GraphQLList(ChildType) }
+  }
+});
+
+//const count = Math.pow(2, 15) - 1;
+const count = Math.pow(2, 16);
+const children = Array.from({ length: count }, (_, i) => ({ id: i }));
+
+const QueryType = new GraphQLObjectType({
+  name: "Query",
+  fields: {
+    parent: {
+      type: ParentType,
+      resolve: () => ({
+        id: "a",
+        children
+      })
+    },
+    children: {
+      type: new GraphQLList(ChildType),
+      resolve: () => children
+    }
+  }
+});
+
+const schema = new GraphQLSchema({ query: QueryType });
+
 function delay(wait) {
-  return new Promise(resolve => setTimeout(resolve, wait));
+  return new Promise((resolve) => setTimeout(resolve, wait));
 }
 
-const link = new ApolloLink(operation => {
-  return new Observable(async observer => {
+export const link = new ApolloLink((operation) => {
+  return new Observable(async (observer) => {
     const { query, operationName, variables } = operation;
-    await delay(300);
+    console.log("OBSERVING");
+    await delay(1000);
     try {
       const result = await graphql(
         schema,
@@ -71,7 +71,7 @@ const link = new ApolloLink(operation => {
         null,
         null,
         variables,
-        operationName,
+        operationName
       );
       observer.next(result);
       observer.complete();
@@ -81,106 +81,77 @@ const link = new ApolloLink(operation => {
   });
 });
 
-/*** APP ***/
-import React, { useState } from "react";
-import { render } from "react-dom";
-import {
-  ApolloClient,
-  ApolloProvider,
-  InMemoryCache,
-  gql,
-  useQuery,
-  useMutation,
-} from "@apollo/client";
-import "./index.css";
-
-const ALL_PEOPLE = gql`
-  query AllPeople {
-    people {
+const GET_PARENT = gql`
+  query GetParent {
+    parent {
       id
-      name
+      children {
+        id
+      }
     }
   }
 `;
 
-const ADD_PERSON = gql`
-  mutation AddPerson($name: String) {
-    addPerson(name: $name) {
+const GET_CHILDREN = gql`
+  query GetChildren {
+    children {
       id
-      name
     }
   }
 `;
 
-function App() {
-  const [name, setName] = useState('');
-  const {
-    loading,
-    data,
-  } = useQuery(ALL_PEOPLE);
+function Children() {
+  const { loading, data } = useQuery(GET_CHILDREN, {
+    fetchPolicy: "cache-and-network"
+  });
+  if (loading) return <p>Loading children...</p>;
 
-  const [addPerson] = useMutation(ADD_PERSON, {
-    update: (cache, { data: { addPerson: addPersonData } }) => {
-      const peopleResult = cache.readQuery({ query: ALL_PEOPLE });
+  return (
+    <>
+      <h2>Children</h2>
+      <ul>
+        <li># counts: {data.children.length}</li>
+      </ul>
+    </>
+  );
+}
 
-      cache.writeQuery({
-        query: ALL_PEOPLE,
-        data: {
-          ...peopleResult,
-          people: [
-            ...peopleResult.people,
-            addPersonData,
-          ],
-        },
-      });
-    },
+function Parent() {
+  const { loading, data } = useQuery(GET_PARENT, {
+    fetchPolicy: "cache-first"
   });
 
   return (
     <main>
-      <h1>Apollo Client Issue Reproduction</h1>
-      <p>
-        This application can be used to demonstrate an error in Apollo Client.
-      </p>
-      <div className="add-person">
-        <label htmlFor="name">Name</label>
-        <input
-          type="text"
-          name="name"
-          value={name}
-          onChange={evt => setName(evt.target.value)}
-        />
-        <button
-          onClick={() => {
-            addPerson({ variables: { name } });
-            setName('');
-          }}
-        >
-          Add person
-        </button>
-      </div>
-      <h2>Names</h2>
       {loading ? (
-        <p>Loading…</p>
+        <p>Loading...</p>
       ) : (
-        <ul>
-          {data?.people.map(person => (
-            <li key={person.id}>{person.name}</li>
-          ))}
-        </ul>
+        <>
+          <ul>
+            <li key="id">ID: {data.parent.id}</li>
+          </ul>
+          <Children />
+        </>
       )}
     </main>
   );
 }
 
-const client = new ApolloClient({
-  cache: new InMemoryCache(),
-  link
-});
+const cache = new InMemoryCache();
+
+const client = new ApolloClient({ cache, link });
+
+//render(
+//  <ApolloProvider client={client}>
+//    <Parent />
+//  </ApolloProvider>,
+//  document.getElementById("root"),
+//);
 
 render(
   <ApolloProvider client={client}>
-    <App />
+    <Children />
   </ApolloProvider>,
   document.getElementById("root")
 );
+;
