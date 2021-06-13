@@ -1,88 +1,5 @@
-/*** SCHEMA ***/
-import {
-  GraphQLSchema,
-  GraphQLObjectType,
-  GraphQLID,
-  GraphQLString,
-  GraphQLList,
-} from 'graphql';
-const PersonType = new GraphQLObjectType({
-  name: 'Person',
-  fields: {
-    id: { type: GraphQLID },
-    name: { type: GraphQLString },
-  },
-});
-
-const peopleData = [
-  { id: 1, name: 'John Smith' },
-  { id: 2, name: 'Sara Smith' },
-  { id: 3, name: 'Budd Deey' },
-];
-
-const QueryType = new GraphQLObjectType({
-  name: 'Query',
-  fields: {
-    people: {
-      type: new GraphQLList(PersonType),
-      resolve: () => peopleData,
-    },
-  },
-});
-
-const MutationType = new GraphQLObjectType({
-  name: 'Mutation',
-  fields: {
-    addPerson: {
-      type: PersonType,
-      args: {
-        name: { type: GraphQLString },
-      },
-      resolve: function (_, { name }) {
-        const person = {
-          id: peopleData[peopleData.length - 1].id + 1,
-          name,
-        };
-
-        peopleData.push(person);
-        return person;
-      }
-    },
-  },
-});
-
-const schema = new GraphQLSchema({ query: QueryType, mutation: MutationType });
-
-/*** LINK ***/
-import { graphql, print } from "graphql";
-import { ApolloLink, Observable } from "@apollo/client";
-function delay(wait) {
-  return new Promise(resolve => setTimeout(resolve, wait));
-}
-
-const link = new ApolloLink(operation => {
-  return new Observable(async observer => {
-    const { query, operationName, variables } = operation;
-    await delay(300);
-    try {
-      const result = await graphql(
-        schema,
-        print(query),
-        null,
-        null,
-        variables,
-        operationName,
-      );
-      observer.next(result);
-      observer.complete();
-    } catch (err) {
-      observer.error(err);
-    }
-  });
-});
-
 /*** APP ***/
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { render } from "react-dom";
 import {
   ApolloClient,
@@ -90,93 +7,113 @@ import {
   InMemoryCache,
   gql,
   useQuery,
-  useMutation,
 } from "@apollo/client";
 import "./index.css";
 
-const ALL_PEOPLE = gql`
-  query AllPeople {
-    people {
-      id
-      name
-    }
-  }
-`;
+const queryReg = /method=([^&]*)/;
 
-const ADD_PERSON = gql`
-  mutation AddPerson($name: String) {
-    addPerson(name: $name) {
-      id
-      name
-    }
-  }
-`;
+function Container() {
+  const [count, setCount] = useState(0);
+  const [on, toggle] = useState(true);
+  const [method, switchMethod] = useState(true);
 
-function App() {
-  const [name, setName] = useState('');
-  const {
-    loading,
-    data,
-  } = useQuery(ALL_PEOPLE);
+  const name = method ? "apollo" : "fetch";
 
-  const [addPerson] = useMutation(ADD_PERSON, {
-    update: (cache, { data: { addPerson: addPersonData } }) => {
-      const peopleResult = cache.readQuery({ query: ALL_PEOPLE });
-
-      cache.writeQuery({
-        query: ALL_PEOPLE,
-        data: {
-          ...peopleResult,
-          people: [
-            ...peopleResult.people,
-            addPersonData,
-          ],
-        },
-      });
-    },
-  });
+  useEffect(() => {
+    setInterval(() => setCount(c => c + 1), 1000);
+  }, []);
 
   return (
-    <main>
-      <h1>Apollo Client Issue Reproduction</h1>
-      <p>
-        This application can be used to demonstrate an error in Apollo Client.
-      </p>
-      <div className="add-person">
-        <label htmlFor="name">Name</label>
-        <input
-          type="text"
-          name="name"
-          value={name}
-          onChange={evt => setName(evt.target.value)}
-        />
-        <button
-          onClick={() => {
-            addPerson({ variables: { name } });
-            setName('');
-          }}
-        >
-          Add person
-        </button>
+    <div>
+      <button onClick={() => switchMethod(x => !x)}>switch method</button>{" "}
+      {name}
+      <div>--------------</div>
+      <div>Count: {count}</div>
+      <div>
+        <button onClick={() => toggle(x => !x)}>toggle</button>
       </div>
-      <h2>Names</h2>
-      {loading ? (
-        <p>Loading…</p>
-      ) : (
-        <ul>
-          {data?.people.map(person => (
-            <li key={person.id}>{person.name}</li>
-          ))}
-        </ul>
+      {on && (
+        <iframe
+          title="inner"
+          src={`/?v=${count}&method=${name}`}
+          name="inner"
+        />
       )}
-    </main>
+    </div>
   );
 }
 
+const URL = "https://countries.trevorblades.com/";
+
 const client = new ApolloClient({
+  uri: URL,
   cache: new InMemoryCache(),
-  link
 });
+
+const fetchQuery = `{ countries { name } }`;
+
+const apolloQuery = gql`
+  query {
+    countries {
+      name
+    }
+  }
+`;
+
+function execFetch() {
+  console.log("-> starting fetch");
+  return fetch(URL, {
+    headers: { "Content-Type": "application/json" },
+    method: "POST",
+    body: JSON.stringify({ query: fetchQuery }),
+  })
+    .then(response => {
+      return response.json();
+    })
+    .then(data => {
+      console.log("<- data received", data);
+      return data;
+    })
+    .catch(e => console.error("xx data error", e));
+}
+
+function FetchTest() {
+  const [data, setData] = useState();
+  useEffect(() => {
+    execFetch().then(data => setData(data));
+  }, []);
+
+  return (
+    <div>
+      <b>Fetch</b> result is: {JSON.stringify(data)}
+    </div>
+  );
+}
+
+function ApolloTest() {
+  const { data } = useQuery(apolloQuery, {
+    client: client,
+  });
+
+  return (
+    <div>
+      <b>Apollo</b> result is: {JSON.stringify(data)}
+    </div>
+  );
+}
+
+function App() {
+  const regRes = queryReg.exec(window.location.search);
+  const method = regRes && regRes[1];
+
+  return (
+    window.name === 'inner' && method === 'apollo'
+    ? <ApolloTest />
+    : window.name === 'inner' && method === 'fetch'
+    ? <FetchTest />
+    : <Container />
+  );
+}
 
 render(
   <ApolloProvider client={client}>
