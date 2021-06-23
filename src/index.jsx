@@ -4,6 +4,7 @@ import {
   GraphQLObjectType,
   GraphQLID,
   GraphQLString,
+  GraphQLFloat,
   GraphQLList,
 } from 'graphql';
 const PersonType = new GraphQLObjectType({
@@ -11,6 +12,7 @@ const PersonType = new GraphQLObjectType({
   fields: {
     id: { type: GraphQLID },
     name: { type: GraphQLString },
+    updated: { type: GraphQLFloat },
   },
 });
 
@@ -25,7 +27,9 @@ const QueryType = new GraphQLObjectType({
   fields: {
     people: {
       type: new GraphQLList(PersonType),
-      resolve: () => peopleData,
+      resolve: () => {
+        return peopleData.map((person) => ({...person, updated: Date.now()}));
+      },
     },
   },
 });
@@ -63,7 +67,7 @@ function delay(wait) {
 const link = new ApolloLink(operation => {
   return new Observable(async observer => {
     const { query, operationName, variables } = operation;
-    await delay(300);
+    await delay(operationName === 'addPerson' ? 3000 : 300);
     try {
       const result = await graphql(
         schema,
@@ -99,6 +103,7 @@ const ALL_PEOPLE = gql`
     people {
       id
       name
+      updated
     }
   }
 `;
@@ -112,17 +117,24 @@ const ADD_PERSON = gql`
   }
 `;
 
+function PeopleList() {
+  const { loading, data } = useQuery(ALL_PEOPLE, { pollInterval: 1000 });
+  return loading ? (
+    <p>Loading…</p>
+  ) : (
+    <ul>
+      {data?.people.map(person => (
+        <li key={person.id}>{person.name} ({person.updated})</li>
+      ))}
+    </ul>
+  );
+}
+
 function App() {
   const [name, setName] = useState('');
-  const {
-    loading,
-    data,
-  } = useQuery(ALL_PEOPLE);
-
   const [addPerson] = useMutation(ADD_PERSON, {
-    update: (cache, { data: { addPerson: addPersonData } }) => {
+    update(cache, { data: { addPerson: addPersonData } }) {
       const peopleResult = cache.readQuery({ query: ALL_PEOPLE });
-
       cache.writeQuery({
         query: ALL_PEOPLE,
         data: {
@@ -152,7 +164,17 @@ function App() {
         />
         <button
           onClick={() => {
-            addPerson({ variables: { name } });
+            addPerson({
+              variables: { name },
+              optimisticResponse: {
+                addPerson: {
+                  id: null,
+                  name: `${name} (optimistic)`,
+                  __typename: 'Person',
+                  updated: Date.now(),
+                },
+              },
+            });
             setName('');
           }}
         >
@@ -160,15 +182,7 @@ function App() {
         </button>
       </div>
       <h2>Names</h2>
-      {loading ? (
-        <p>Loading…</p>
-      ) : (
-        <ul>
-          {data?.people.map(person => (
-            <li key={person.id}>{person.name}</li>
-          ))}
-        </ul>
-      )}
+      <PeopleList />
     </main>
   );
 }
