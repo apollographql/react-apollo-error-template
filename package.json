@@ -10,11 +10,13 @@
     "react-dom": "^17.0.2"
   },
   "devDependencies": {
+    "customize-cra": "^1.0.0",
+    "react-app-rewired": "^2.1.8",
     "react-scripts": "^4.0.3"
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "react-app-rewired build",
     "test": "react-scripts test --env=jsdom"
   },
   "browserslist": [
