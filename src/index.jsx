@@ -5,53 +5,59 @@ import {
   GraphQLID,
   GraphQLString,
   GraphQLList,
-} from 'graphql';
+  GraphQLInt
+} from "graphql";
+
+const AddressType = new GraphQLObjectType({
+  name: "Address",
+  fields: {
+    country: { type: GraphQLString },
+  },
+});
+
 const PersonType = new GraphQLObjectType({
-  name: 'Person',
+  name: "Person",
   fields: {
     id: { type: GraphQLID },
     name: { type: GraphQLString },
+    address: {
+      type: AddressType,
+      args: {
+        arg: {
+          type: GraphQLInt,
+        },
+      },
+    },
   },
 });
 
 const peopleData = [
-  { id: 1, name: 'John Smith' },
-  { id: 2, name: 'Sara Smith' },
-  { id: 3, name: 'Budd Deey' },
+  { id: 1, name: "John Smith", address: { country: "UK" } },
+  { id: 2, name: "Sara Smith", address: { country: "UK" } },
+  { id: 3, name: "Budd Deey", address: { country: "UK" } }
 ];
 
 const QueryType = new GraphQLObjectType({
-  name: 'Query',
+  name: "Query",
   fields: {
-    people: {
-      type: new GraphQLList(PersonType),
-      resolve: () => peopleData,
-    },
-  },
-});
-
-const MutationType = new GraphQLObjectType({
-  name: 'Mutation',
-  fields: {
-    addPerson: {
+    person: {
       type: PersonType,
       args: {
-        name: { type: GraphQLString },
+        id: {
+          type: GraphQLID
+        }
       },
-      resolve: function (_, { name }) {
-        const person = {
-          id: peopleData[peopleData.length - 1].id + 1,
-          name,
-        };
-
-        peopleData.push(person);
-        return person;
-      }
+      resolve: (_root, args) =>
+        peopleData.find((cur) => cur.id === parseInt(args.id, 10))
     },
-  },
+    people: {
+      type: new GraphQLList(PersonType),
+      resolve: () => peopleData
+    }
+  }
 });
 
-const schema = new GraphQLSchema({ query: QueryType, mutation: MutationType });
+const schema = new GraphQLSchema({ query: QueryType });
 
 /*** LINK ***/
 import { graphql, print } from "graphql";
@@ -82,105 +88,84 @@ const link = new ApolloLink(operation => {
 });
 
 /*** APP ***/
-import React, { useState } from "react";
-import { render } from "react-dom";
+import React from "react";
+import "./index.css";
+
+import { gql, useQuery } from "@apollo/client";
+import { useEffect, useRef } from "react";
+
+const queryA = gql`
+  query QueryA($id: ID!) {
+    person(id: $id) {
+      id
+      name
+    }
+  }
+`;
+
+const queryB = gql`
+  query QueryB($id: ID!, $arg: Int = 2) {
+    person(id: $id) {
+      id
+      name
+      address(arg: $arg) {
+        country
+      }
+    }
+  }
+`;
+
+let renderCount = 0;
+export default function App() {
+  const nodeRef = useRef();
+
+  renderCount++;
+
+  const resultA = useQuery(queryA, {
+    variables: { id: 1 }
+  });
+  const resultB = useQuery(queryB, {
+    variables: { id: 1 },
+    skip: !resultA.data,
+    notifyOnNetworkStatusChange: true
+  });
+
+  useEffect(() => {
+    const node = nodeRef.current;
+    node.innerHTML += `<div>
+      <p>Render: ${renderCount}</p>
+      <pre>
+        ${JSON.stringify({ a: resultA.data, b: resultB.data }, null, 2)}
+      </pre>
+    </div>
+    <hr />`;
+  });
+
+  return <div ref={nodeRef} />;
+}
+
 import {
   ApolloClient,
   ApolloProvider,
   InMemoryCache,
-  gql,
-  useQuery,
-  useMutation,
 } from "@apollo/client";
-import "./index.css";
+import {render} from "react-dom";
 
-const ALL_PEOPLE = gql`
-  query AllPeople {
-    people {
-      id
-      name
-    }
-  }
-`;
+const cache = new InMemoryCache();
 
-const ADD_PERSON = gql`
-  mutation AddPerson($name: String) {
-    addPerson(name: $name) {
-      id
-      name
-    }
-  }
-`;
+//cache.writeQuery({
+//  query: queryA,
+//  variables: { id: 1 },
+//  data: {
+//    person: { id: 1, name: "John from cache", __typename: 'Person' },
+//  },
+//});
 
-function App() {
-  const [name, setName] = useState('');
-  const {
-    loading,
-    data,
-  } = useQuery(ALL_PEOPLE);
-
-  const [addPerson] = useMutation(ADD_PERSON, {
-    update: (cache, { data: { addPerson: addPersonData } }) => {
-      const peopleResult = cache.readQuery({ query: ALL_PEOPLE });
-
-      cache.writeQuery({
-        query: ALL_PEOPLE,
-        data: {
-          ...peopleResult,
-          people: [
-            ...peopleResult.people,
-            addPersonData,
-          ],
-        },
-      });
-    },
-  });
-
-  return (
-    <main>
-      <h1>Apollo Client Issue Reproduction</h1>
-      <p>
-        This application can be used to demonstrate an error in Apollo Client.
-      </p>
-      <div className="add-person">
-        <label htmlFor="name">Name</label>
-        <input
-          type="text"
-          name="name"
-          value={name}
-          onChange={evt => setName(evt.target.value)}
-        />
-        <button
-          onClick={() => {
-            addPerson({ variables: { name } });
-            setName('');
-          }}
-        >
-          Add person
-        </button>
-      </div>
-      <h2>Names</h2>
-      {loading ? (
-        <p>Loading…</p>
-      ) : (
-        <ul>
-          {data?.people.map(person => (
-            <li key={person.id}>{person.name}</li>
-          ))}
-        </ul>
-      )}
-    </main>
-  );
-}
-
-const client = new ApolloClient({
-  cache: new InMemoryCache(),
-  link
-});
+const client = new ApolloClient({ link, cache });
 
 render(
   <ApolloProvider client={client}>
     <App />
   </ApolloProvider>,
-  document.getElementById("root")
+  document.getElementById("root"),
 );
