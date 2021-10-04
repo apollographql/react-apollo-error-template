@@ -12,11 +12,13 @@
   "devDependencies": {
     "customize-cra": "^1.0.0",
     "react-app-rewired": "^2.1.8",
-    "react-scripts": "^4.0.3"
+    "react-scripts": "^4.0.3",
+    "source-map-explorer": "^2.5.2"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-app-rewired build",
+    "analyze": "source-map-explorer 'build/static/js/*.js'",
     "test": "react-scripts test --env=jsdom"
   },
   "browserslist": [
