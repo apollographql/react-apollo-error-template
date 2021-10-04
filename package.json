@@ -13,7 +13,8 @@
     "customize-cra": "^1.0.0",
     "react-app-rewired": "^2.1.8",
     "react-scripts": "^4.0.3",
-    "source-map-explorer": "^2.5.2"
+    "source-map-explorer": "^2.5.2",
+    "stats-webpack-plugin": "^0.7.0"
   },
   "scripts": {
     "start": "react-scripts start",
