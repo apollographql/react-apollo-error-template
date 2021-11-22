@@ -65,14 +65,12 @@ const link = new ApolloLink(operation => {
     const { query, operationName, variables } = operation;
     await delay(300);
     try {
-      const result = await graphql(
+      const result = await graphql({
         schema,
-        print(query),
-        null,
-        null,
-        variables,
+        source: print(query),
+        variableValues: variables,
         operationName,
-      );
+      });
       observer.next(result);
       observer.complete();
     } catch (err) {
