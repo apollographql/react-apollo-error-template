@@ -81,7 +81,7 @@ const link = new ApolloLink(operation => {
 
 /*** APP ***/
 import React, { useState } from "react";
-import { render } from "react-dom";
+import { createRoot } from "react-dom/client";
 import {
   ApolloClient,
   ApolloProvider,
@@ -176,9 +176,10 @@ const client = new ApolloClient({
   link
 });
 
-render(
+const container = document.getElementById("root");
+const root = createRoot(container);
+root.render(
   <ApolloProvider client={client}>
     <App />
-  </ApolloProvider>,
-  document.getElementById("root")
+  </ApolloProvider>
 );
