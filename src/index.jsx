@@ -1,84 +1,3 @@
-/*** SCHEMA ***/
-import {
-  GraphQLSchema,
-  GraphQLObjectType,
-  GraphQLID,
-  GraphQLString,
-  GraphQLList,
-} from 'graphql';
-const PersonType = new GraphQLObjectType({
-  name: 'Person',
-  fields: {
-    id: { type: GraphQLID },
-    name: { type: GraphQLString },
-  },
-});
-
-const peopleData = [
-  { id: 1, name: 'John Smith' },
-  { id: 2, name: 'Sara Smith' },
-  { id: 3, name: 'Budd Deey' },
-];
-
-const QueryType = new GraphQLObjectType({
-  name: 'Query',
-  fields: {
-    people: {
-      type: new GraphQLList(PersonType),
-      resolve: () => peopleData,
-    },
-  },
-});
-
-const MutationType = new GraphQLObjectType({
-  name: 'Mutation',
-  fields: {
-    addPerson: {
-      type: PersonType,
-      args: {
-        name: { type: GraphQLString },
-      },
-      resolve: function (_, { name }) {
-        const person = {
-          id: peopleData[peopleData.length - 1].id + 1,
-          name,
-        };
-
-        peopleData.push(person);
-        return person;
-      }
-    },
-  },
-});
-
-const schema = new GraphQLSchema({ query: QueryType, mutation: MutationType });
-
-/*** LINK ***/
-import { graphql, print } from "graphql";
-import { ApolloLink, Observable } from "@apollo/client";
-function delay(wait) {
-  return new Promise(resolve => setTimeout(resolve, wait));
-}
-
-const link = new ApolloLink(operation => {
-  return new Observable(async observer => {
-    const { query, operationName, variables } = operation;
-    await delay(300);
-    try {
-      const result = await graphql({
-        schema,
-        source: print(query),
-        variableValues: variables,
-        operationName,
-      });
-      observer.next(result);
-      observer.complete();
-    } catch (err) {
-      observer.error(err);
-    }
-  });
-});
-
 /*** APP ***/
 import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
@@ -87,97 +6,144 @@ import {
   ApolloProvider,
   InMemoryCache,
   gql,
+  useFragment_experimental as useFragment,
   useQuery,
   useMutation,
 } from "@apollo/client";
+import { createFragmentRegistry } from "@apollo/client/cache";
 import "./index.css";
 
-const ALL_PEOPLE = gql`
-  query AllPeople {
-    people {
+const UPDATE_TRAIL = gql`
+  mutation UpdateTrail($trailId: ID!, $status: TrailStatus!) {
+    setTrailStatus(id: $trailId, status: $status) {
       id
-      name
+      status
     }
   }
 `;
 
-const ADD_PERSON = gql`
-  mutation AddPerson($name: String) {
-    addPerson(name: $name) {
+const TrailFragment = gql`
+  fragment TrailFragment on Trail {
+    name
+    status
+    difficulty
+  }
+`;
+
+const ALL_TRAILS = gql`
+  query allTrailsWithFragment {
+    allTrails {
       id
-      name
+      ...TrailFragment @nonreactive
     }
   }
 `;
 
 function App() {
-  const [name, setName] = useState('');
-  const {
-    loading,
-    data,
-  } = useQuery(ALL_PEOPLE);
-
-  const [addPerson] = useMutation(ADD_PERSON, {
-    update: (cache, { data: { addPerson: addPersonData } }) => {
-      const peopleResult = cache.readQuery({ query: ALL_PEOPLE });
-
-      cache.writeQuery({
-        query: ALL_PEOPLE,
-        data: {
-          ...peopleResult,
-          people: [
-            ...peopleResult.people,
-            addPersonData,
-          ],
-        },
-      });
-    },
-  });
+  const { data, loading } = useQuery(ALL_TRAILS);
 
   return (
     <main>
-      <h1>Apollo Client Issue Reproduction</h1>
-      <p>
-        This application can be used to demonstrate an error in Apollo Client.
-      </p>
-      <div className="add-person">
-        <label htmlFor="name">Name</label>
-        <input
-          type="text"
-          name="name"
-          value={name}
-          onChange={evt => setName(evt.target.value)}
-        />
-        <button
-          onClick={() => {
-            addPerson({ variables: { name } });
-            setName('');
-          }}
-        >
-          Add person
-        </button>
-      </div>
-      <h2>Names</h2>
-      {loading ? (
-        <p>Loading…</p>
-      ) : (
-        <ul>
-          {data?.people.map(person => (
-            <li key={person.id}>{person.name}</li>
-          ))}
-        </ul>
-      )}
+      <h2>Ski Lifts</h2>
+      <TrailSelectAndDetails trails={data?.allTrails} />
+      <TrailsList trails={data?.allTrails} loading={loading} />
     </main>
   );
 }
 
-const client = new ApolloClient({
-  cache: new InMemoryCache(),
-  link
-});
+const TrailSelectAndDetails = ({ trails }) => {
+  const [currentTrailId, setCurrentTrail] = useState();
+  const currentlySelectedTrail = React.useMemo(
+    () => trails?.find((t) => t.id === (currentTrailId || trails[0].id)),
+    [currentTrailId, trails]
+  );
 
+  return (
+    <>
+      <select onChange={(e) => setCurrentTrail(e.currentTarget.value)}>
+        {trails?.map((trail) => (
+          <option key={trail.id}>{trail.id}</option>
+        ))}
+      </select>
+      {currentlySelectedTrail?.id && (
+        <TrailDetails id={currentlySelectedTrail.id} />
+      )}
+    </>
+  );
+};
+
+const TrailDetails = ({ id }) => {
+  const { data } = useFragment({
+    fragment: TrailFragment,
+    from: {
+      __typename: "Trail",
+      id,
+    },
+  });
+
+  return (
+    <h3 style={{ marginTop: "2rem" }}>
+      {data.name} - {data.status}
+    </h3>
+  );
+};
+
+const TrailsList = ({ trails, loading }) => {
+  return (
+    <>
+      {loading ? (
+        <p>Loading…</p>
+      ) : (
+        <ul>
+          {trails?.map((trail) => (
+            <Trail key={trail.id} id={trail.id} />
+          ))}
+        </ul>
+      )}
+    </>
+  );
+};
+
+const Trail = ({ id }) => {
+  const [updateTrail] = useMutation(UPDATE_TRAIL);
+  const { data } = useFragment({
+    fragment: TrailFragment,
+    from: {
+      __typename: "Trail",
+      id,
+    },
+  });
+
+  return (
+    <li key={id}>
+      {data.name} - {data.status}
+      <input
+        checked={data.status === "OPEN" ? true : false}
+        type="checkbox"
+        onChange={(e) => {
+          updateTrail({
+            variables: {
+              trailId: id,
+              status: e.target.checked ? "OPEN" : "CLOSED",
+            },
+          });
+        }}
+      />
+    </li>
+  );
+};
+
+const client = new ApolloClient({
+  uri: "https://snowtooth.moonhighway.com",
+  cache: new InMemoryCache({
+    fragments: createFragmentRegistry(gql`
+      ${TrailFragment}
+    `),
+  }),
+});
 const container = document.getElementById("root");
 const root = createRoot(container);
+
 root.render(
   <ApolloProvider client={client}>
     <App />
