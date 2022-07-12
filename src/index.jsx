@@ -6,8 +6,6 @@ import {
   ApolloProvider,
   InMemoryCache,
   gql,
-  useBackgroundQuery,
-  useFragment,
   useQuery,
   useMutation,
 } from "@apollo/client";
@@ -22,30 +20,14 @@ const UPDATE_TRAIL = gql`
   }
 `;
 
-const TrailFragment = gql`
-  fragment TrailFragment on Trail {
-    name
-    status
-    difficulty
-  }
-`;
-
 const ALL_TRAILS = gql`
   query allTrails {
     allTrails {
       id
+      name
+      status
     }
   }
-`;
-
-const ALL_TRAILS_WITH_FRAGMENT = gql`
-  query allTrails {
-    allTrails {
-      id
-      ...TrailFragment
-    }
-  }
-  ${TrailFragment}
 `;
 
 function App() {
@@ -58,7 +40,6 @@ function App() {
 
 const TrailsList = () => {
   const { data, loading } = useQuery(ALL_TRAILS);
-  useBackgroundQuery({ query: ALL_TRAILS_WITH_FRAGMENT });
 
   return (
     <>
@@ -68,7 +49,7 @@ const TrailsList = () => {
       ) : (
         <ul>
           {data?.allTrails.map((trail) => (
-            <Trail key={trail.id} id={trail.id} />
+            <Trail key={trail.id} id={trail.id} {...trail} />
           ))}
         </ul>
       )}
@@ -76,37 +57,19 @@ const TrailsList = () => {
   );
 };
 
-const Trail = (props) => {
-  const { data } = useFragment({
-    fragment: TrailFragment,
-    from: {
-      __typename: "Trail",
-      id: props.id,
-    },
-  });
-
-  const [updateTrail] = useMutation(UPDATE_TRAIL, {
-    update: (cache, { data: { setTrailStatus: updateTrailData } }) => {
-      cache.updateFragment(
-        {
-          id: updateTrailData.id,
-          fragment: TrailFragment,
-        },
-        (data) => ({ ...data, status: updateTrailData.status })
-      );
-    },
-  });
+const Trail = ({ id, name, status }) => {
+  const [updateTrail] = useMutation(UPDATE_TRAIL);
 
   return (
-    <li key={props.id}>
-      {data.name} - {data.status}
+    <li key={id}>
+      {name} - {status}
       <input
-        checked={data.status === 'OPEN' ? true : false}
+        checked={status === 'OPEN' ? true : false}
         type="checkbox"
         onChange={(e) => {
           updateTrail({
             variables: {
-              trailId: props.id,
+              trailId: id,
               status: e.target.checked ? 'OPEN' : 'CLOSED',
               }
             })
