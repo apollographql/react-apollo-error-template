@@ -6,6 +6,8 @@ import {
   ApolloProvider,
   InMemoryCache,
   gql,
+  useBackgroundQuery,
+  useFragment,
   useQuery,
   useMutation,
 } from "@apollo/client";
@@ -20,14 +22,30 @@ const UPDATE_TRAIL = gql`
   }
 `;
 
+const TrailFragment = gql`
+  fragment TrailFragment on Trail {
+    name
+    status
+    difficulty
+  }
+`;
+
 const ALL_TRAILS = gql`
   query allTrails {
     allTrails {
       id
-      name
-      status
     }
   }
+`;
+
+const ALL_TRAILS_WITH_FRAGMENT = gql`
+  query allTrails {
+    allTrails {
+      id
+      ...TrailFragment
+    }
+  }
+  ${TrailFragment}
 `;
 
 function App() {
@@ -40,6 +58,7 @@ function App() {
 
 const TrailsList = () => {
   const { data, loading } = useQuery(ALL_TRAILS);
+  useBackgroundQuery({ query: ALL_TRAILS_WITH_FRAGMENT });
 
   return (
     <>
@@ -49,7 +68,7 @@ const TrailsList = () => {
       ) : (
         <ul>
           {data?.allTrails.map((trail) => (
-            <Trail key={trail.id} id={trail.id} {...trail} />
+            <Trail key={trail.id} id={trail.id} />
           ))}
         </ul>
       )}
@@ -57,31 +76,37 @@ const TrailsList = () => {
   );
 };
 
-const Trail = ({ id, name, status }) => {
+const Trail = ({ id }) => {
   const [updateTrail] = useMutation(UPDATE_TRAIL);
+  const { data } = useFragment({
+    fragment: TrailFragment,
+    from: {
+      __typename: "Trail",
+      id,
+    },
+  });
 
   return (
     <li key={id}>
-      {name} - {status}
+      {data.name} - {data.status}
       <input
-        checked={status === 'OPEN' ? true : false}
+        checked={data.status === "OPEN" ? true : false}
         type="checkbox"
         onChange={(e) => {
           updateTrail({
             variables: {
               trailId: id,
-              status: e.target.checked ? 'OPEN' : 'CLOSED',
-              }
-            })
-          }
-        }
+              status: e.target.checked ? "OPEN" : "CLOSED",
+            },
+          });
+        }}
       />
     </li>
   );
-}
+};
 
 const client = new ApolloClient({
-  uri: 'https://snowtooth.moonhighway.com',
+  uri: "https://snowtooth.moonhighway.com",
   cache: new InMemoryCache(),
 });
 const container = document.getElementById("root");
