@@ -1,5 +1,5 @@
 /*** APP ***/
-import React from "react";
+import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   ApolloClient,
@@ -39,7 +39,7 @@ const ALL_TRAILS = gql`
 `;
 
 const ALL_TRAILS_WITH_FRAGMENT = gql`
-  query allTrails {
+  query allTrailsWithFragment {
     allTrails {
       id
       ...TrailFragment
@@ -49,25 +49,63 @@ const ALL_TRAILS_WITH_FRAGMENT = gql`
 `;
 
 function App() {
-  return (
-    <main>
-      <TrailsList />
-    </main>
-  );
-}
-
-const TrailsList = () => {
   const { data, loading } = useQuery(ALL_TRAILS);
   useBackgroundQuery({ query: ALL_TRAILS_WITH_FRAGMENT });
 
   return (
-    <>
+    <main>
       <h2>Ski Lifts</h2>
+      <TrailSelectAndDetails trails={data?.allTrails} />
+      <TrailsList trails={data?.allTrails} loading={loading} />
+    </main>
+  );
+}
+
+const TrailSelectAndDetails = ({ trails }) => {
+  const [currentTrailId, setCurrentTrail] = useState();
+  const currentlySelectedTrail = React.useMemo(
+    () => trails?.find((t) => t.id === (currentTrailId || trails[0].id)),
+    [currentTrailId, trails]
+  );
+
+  return (
+    <>
+      <select onChange={(e) => setCurrentTrail(e.currentTarget.value)}>
+        {trails?.map((trail) => (
+          <option key={trail.id}>{trail.id}</option>
+        ))}
+      </select>
+      {currentlySelectedTrail?.id && (
+        <TrailDetails id={currentlySelectedTrail.id} />
+      )}
+    </>
+  );
+};
+
+const TrailDetails = ({ id }) => {
+  const { data } = useFragment({
+    fragment: TrailFragment,
+    from: {
+      __typename: "Trail",
+      id,
+    },
+  });
+
+  return (
+    <h3 style={{ marginTop: "2rem" }}>
+      {data.name} - {data.status}
+    </h3>
+  );
+};
+
+const TrailsList = ({ trails, loading }) => {
+  return (
+    <>
       {loading ? (
         <p>Loading…</p>
       ) : (
         <ul>
-          {data?.allTrails.map((trail) => (
+          {trails?.map((trail) => (
             <Trail key={trail.id} id={trail.id} />
           ))}
         </ul>
@@ -85,6 +123,7 @@ const Trail = ({ id }) => {
       id,
     },
   });
+  console.log({ data, id });
 
   return (
     <li key={id}>
