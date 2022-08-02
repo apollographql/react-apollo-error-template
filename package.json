@@ -3,9 +3,10 @@
   "name": "apollo-client-error-template",
   "version": "1.0.0",
   "license": "MIT",
+  "main": "src/index.jsx",
   "dependencies": {
     "@apollo/client": "^3.6.8",
-    "graphql": "^16.4.0",
+    "graphql": "^15.6.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
