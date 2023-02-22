@@ -54,6 +54,7 @@ function App() {
 
   return (
     <main>
+      <h3>Home</h3>
       <div className="add-person">
         <label htmlFor="name">Name</label>
         <input

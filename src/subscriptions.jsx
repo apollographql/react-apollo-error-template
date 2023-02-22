@@ -9,11 +9,17 @@ const query = gql`
 export function Subscriptions() {
   const { data, error, loading } = useSubscription(query);
   if (loading) return <p>Loading...</p>;
-  if (error) return <SubscriptionError />
   return (
     <>
-      <h3>Response: </h3>
-      <p>Score: {data?.numberIncremented}</p>
+      <h3>Subscriptions</h3>
+      {error ? (
+        <SubscriptionError />
+      ) : (
+        <>
+          <h4>Response: </h4>
+          <p>Score: {data?.numberIncremented}</p>
+        </>
+      )}
     </>
   );
 }
@@ -23,12 +29,14 @@ function SubscriptionError() {
     <>
       <p>Error :(</p>
       <p>
-        The CodeSandbox serving our WebSocket API may be sleeping, please
-        visit{" "}
+        The CodeSandbox serving our WebSocket API may be sleeping, please visit{" "}
         <a href="https://nyx00g.sse.codesandbox.io/graphql" target="_blank">
           https://nyx00g.sse.codesandbox.io/graphql
         </a>{" "}
-        to wake it up. Once you see the{" "}
+        to wake it up.
+      </p>
+      <p>
+        Once you see the{" "}
         <a
           href="https://www.apollographql.com/docs/graphos/explorer/explorer/"
           target="_blank"
