@@ -28,7 +28,7 @@ const staticDataLink = new ApolloLink((operation) => {
   });
 });
 
-const url = "wss://nyx00g.sse.codesandbox.io/graphql";
+const url = "wss://uifesi.sse.codesandbox.io/graphql";
 
 const wsLink = new GraphQLWsLink(
   createClient({

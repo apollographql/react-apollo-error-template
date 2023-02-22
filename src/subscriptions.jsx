@@ -30,8 +30,8 @@ function SubscriptionError() {
       <p>Error :(</p>
       <p>
         The CodeSandbox serving our WebSocket API may be sleeping, please visit{" "}
-        <a href="https://nyx00g.sse.codesandbox.io/graphql" target="_blank">
-          https://nyx00g.sse.codesandbox.io/graphql
+        <a href="https://uifesi.sse.codesandbox.io/graphql" target="_blank">
+          https://uifesi.sse.codesandbox.io/graphql
         </a>{" "}
         to wake it up.
       </p>
