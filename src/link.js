@@ -40,9 +40,10 @@ const definitionIsSubscription = (d) => {
   return d.kind === "OperationDefinition" && d.operation === "subscription";
 };
 
-// Create a bidirectional link in order to use different terminating links
-// depending on the operation type: a WebSocket for subscriptions and our own
+// Use directional composition in order to customize the terminating link
+// based on operation type: a WebSocket for subscriptions and our own
 // custom ApolloLink for everything else.
+// For more information, see: https://www.apollographql.com/docs/react/api/link/introduction/#directional-composition
 export const link = ApolloLink.split(
   (operation) => operation.query.definitions.some(definitionIsSubscription),
   wsLink,
