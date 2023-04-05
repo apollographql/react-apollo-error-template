@@ -6,11 +6,11 @@ import {
   ApolloProvider,
   InMemoryCache,
   gql,
-  useBackgroundQuery,
-  useFragment,
+  useFragment_experimental as useFragment,
   useQuery,
   useMutation,
 } from "@apollo/client";
+import { createFragmentRegistry } from "@apollo/client/cache";
 import "./index.css";
 
 const UPDATE_TRAIL = gql`
@@ -31,26 +31,16 @@ const TrailFragment = gql`
 `;
 
 const ALL_TRAILS = gql`
-  query allTrails {
-    allTrails {
-      id
-    }
-  }
-`;
-
-const ALL_TRAILS_WITH_FRAGMENT = gql`
   query allTrailsWithFragment {
     allTrails {
       id
-      ...TrailFragment
+      ...TrailFragment @nonreactive
     }
   }
-  ${TrailFragment}
 `;
 
 function App() {
   const { data, loading } = useQuery(ALL_TRAILS);
-  useBackgroundQuery({ query: ALL_TRAILS_WITH_FRAGMENT });
 
   return (
     <main>
@@ -123,7 +113,6 @@ const Trail = ({ id }) => {
       id,
     },
   });
-  console.log({ data, id });
 
   return (
     <li key={id}>
@@ -146,7 +135,11 @@ const Trail = ({ id }) => {
 
 const client = new ApolloClient({
   uri: "https://snowtooth.moonhighway.com",
-  cache: new InMemoryCache(),
+  cache: new InMemoryCache({
+    fragments: createFragmentRegistry(gql`
+      ${TrailFragment}
+    `),
+  }),
 });
 const container = document.getElementById("root");
 const root = createRoot(container);
