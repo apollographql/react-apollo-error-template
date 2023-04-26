@@ -14,14 +14,14 @@ To make changes in the GraphQL schema make sure to look at the `./src/index.jsx`
 
 # Reproduction Creation Steps
 
-1. Fork this repository to your GitHub account.
+1. Fork this repository to your GitHub account, or fork the [CodeSandbox](https://codesandbox.io/s/github/apollographql/react-apollo-error-template?file=/src/index.jsx) and skip steps 2-4.
 2. By default, cloning this repostiory gives you an Apollo Client 3.0-based application. If you would like to start with a legacy Apollo Client 2.6 application, clone or checkout the `ac2` branch:
   ```sh
   git clone --branch ac2 git@github.com:apollographql/react-apollo-error-template.git
   # Or, after cloning the repository:
   git checkout -t origin/ac2
   ```
-2. After cloning, install all dependencies with `npm install`.
-3. Start the development server with `npm start`.
-4. Make the changes that will reproduce this error locally.
-5. When ready, push your changes back to GitHub and let the `apollo-client` team know where they can be found.
+3. After cloning, install all dependencies with `npm install`.
+4. Start the development server with `npm start`.
+5. Make the changes that will reproduce this error locally.
+6. When ready, push your changes back to GitHub and let the [`apollo-client` team](https://github.com/apollographql/apollo-client#maintainers) know where they can be found.
