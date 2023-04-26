@@ -4,13 +4,20 @@ Welcome! If you are here then you were likely referred to this repo when reporti
 
 Unfortunately, describing an error in GitHub is often not enough to truly understand the reported issue. By creating a small reproduction test case using this template repo the Apollo Client team will be able to identify and fix your error much faster then they could without.
 
-This repo was created with [`create-react-app`][2] for a great developer experience. If you are not using React then a small reproduction case with your framework of choice would go a long way.
+This repo was created with [`create-react-app`][2] and is appropriate for reproductions of client-rendered React applications. To make changes in the GraphQL schema make sure to look at the `./src/index.jsx` file where we define a GraphQL schema using [GraphQL.js][5] which will run in the browser.
 
-To make changes in the GraphQL schema make sure to look at the `./src/index.jsx` file where we define a GraphQL schema using [GraphQL.js][3] which will run in the browser.
+## Reproductions with other frameworks
+
+- **Next.js**: see our [`apollographql/next-apollo-example`][3] repository
+- **React Native**: see our [`apollographql/rn-apollo-client-testbed`][4] repository
+
+If you are not using React, a small reproduction case with your framework of choice would go a long way.
 
 [1]: https://github.com/apollographql/apollo-client
 [2]: https://github.com/facebookincubator/create-react-app
-[3]: http://graphql.org/graphql-js/
+[3]: https://github.com/apollographql/next-apollo-example
+[4]: https://github.com/apollographql/rn-apollo-client-testbed
+[5]: http://graphql.org/graphql-js/
 
 # Reproduction Creation Steps
 
