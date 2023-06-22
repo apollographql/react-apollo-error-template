@@ -2,16 +2,9 @@
 import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { createRoot } from "react-dom/client";
-import {
-  ApolloClient,
-  ApolloProvider,
-  InMemoryCache,
-  gql,
-  useQuery,
-  useMutation,
-} from "@apollo/client";
+import { ApolloProvider, gql, useQuery, useMutation } from "@apollo/client";
 
-import { link } from "./link.js";
+import { client } from "./link.js";
 import { Subscriptions } from "./subscriptions.jsx";
 import { Layout } from "./layout.jsx";
 import "./index.css";
@@ -85,11 +78,6 @@ function App() {
     </main>
   );
 }
-
-const client = new ApolloClient({
-  cache: new InMemoryCache(),
-  link,
-});
 
 const container = document.getElementById("root");
 const root = createRoot(container);

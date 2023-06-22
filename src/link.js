@@ -1,51 +1,66 @@
 /*** LINK ***/
-import { graphql, print } from "graphql";
-import { ApolloLink, Observable } from "@apollo/client";
+import { ApolloLink, ApolloClient, split, InMemoryCache } from "@apollo/client";
+import { Observable, getMainDefinition } from "@apollo/client/utilities";
 import { createClient } from "graphql-ws";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
-import { schema } from "./schema.js";
+import { createUploadLink } from "apollo-upload-client";
 
-function delay(wait) {
-  return new Promise((resolve) => setTimeout(resolve, wait));
-}
+const url = "uifesi.sse.codesandbox.io/graphql";
 
-const staticDataLink = new ApolloLink((operation) => {
-  return new Observable(async (observer) => {
-    const { query, operationName, variables } = operation;
-    await delay(300);
-    try {
-      const result = await graphql({
-        schema,
-        source: print(query),
-        variableValues: variables,
-        operationName,
-      });
-      observer.next(result);
-      observer.complete();
-    } catch (err) {
-      observer.error(err);
-    }
-  });
-});
-
-const url = "wss://uifesi.sse.codesandbox.io/graphql";
+const requestLink = new ApolloLink(
+  (operation, forward) =>
+    new Observable((observer) => {
+      let handle;
+      Promise.resolve(operation)
+        .then(async (operation) => {
+          const jwt = "hello";
+          if (jwt) {
+            operation.setContext({
+              headers: {
+                authorization: `Bearer ${jwt}`,
+              },
+            });
+          }
+        })
+        .then(() => {
+          handle = forward(operation).subscribe({
+            next: observer.next.bind(observer),
+            error: observer.error.bind(observer),
+            complete: observer.complete.bind(observer),
+          });
+        })
+        .catch(observer.error.bind(observer));
+      return () => {
+        if (handle) handle.unsubscribe();
+      };
+    })
+);
 
 const wsLink = new GraphQLWsLink(
   createClient({
-    url,
+    url: `wss://${url}`,
   })
 );
 
-const definitionIsSubscription = (d) => {
-  return d.kind === "OperationDefinition" && d.operation === "subscription";
-};
+const httpLink = createUploadLink({
+  uri: `http://${url}`,
+  credentials: "include",
+});
 
-// Use directional composition in order to customize the terminating link
-// based on operation type: a WebSocket for subscriptions and our own
-// custom ApolloLink for everything else.
-// For more information, see: https://www.apollographql.com/docs/react/api/link/introduction/#directional-composition
-export const link = ApolloLink.split(
-  (operation) => operation.query.definitions.some(definitionIsSubscription),
+const splitLink = split(
+  ({ query }) => {
+    const definition = getMainDefinition(query);
+    return (
+      definition.kind === "OperationDefinition" &&
+      definition.operation === "subscription"
+    );
+  },
   wsLink,
-  staticDataLink
+  ApolloLink.from([requestLink, httpLink])
 );
+
+export const client = new ApolloClient({
+  link: splitLink,
+  cache: new InMemoryCache(),
+  credentials: "include",
+});
