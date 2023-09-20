@@ -1,31 +1,12 @@
 /*** LINK ***/
-import { graphql, print } from "graphql";
-import { ApolloLink, Observable } from "@apollo/client";
+import { ApolloLink, HttpLink } from "@apollo/client";
 import { createClient } from "graphql-ws";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
-import { schema } from "./schema.js";
+import { worker } from "./mocks/browser.js";
 
-function delay(wait) {
-  return new Promise((resolve) => setTimeout(resolve, wait));
-}
-
-const staticDataLink = new ApolloLink((operation) => {
-  return new Observable(async (observer) => {
-    const { query, operationName, variables } = operation;
-    await delay(300);
-    try {
-      const result = await graphql({
-        schema,
-        source: print(query),
-        variableValues: variables,
-        operationName,
-      });
-      observer.next(result);
-      observer.complete();
-    } catch (err) {
-      observer.error(err);
-    }
-  });
+worker.start({ waitUntilReady: true });
+const mockedHttpLink = new HttpLink({
+  uri: "http://localhost:3000/graphql",
 });
 
 const url = "wss://uifesi.sse.codesandbox.io/graphql";
@@ -47,5 +28,5 @@ const definitionIsSubscription = (d) => {
 export const link = ApolloLink.split(
   (operation) => operation.query.definitions.some(definitionIsSubscription),
   wsLink,
-  staticDataLink
+  mockedHttpLink
 );
