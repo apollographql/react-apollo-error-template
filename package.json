@@ -3,7 +3,7 @@
   "name": "apollo-client-error-template",
   "version": "1.0.0",
   "license": "MIT",
-  "main": "src/index.jsx",
+  "type": "module",
   "dependencies": {
     "@apollo/client": "3.8.3",
     "graphql": "16.8.0",
@@ -13,22 +13,19 @@
     "react-router-dom": "6.15.0"
   },
   "devDependencies": {
-    "customize-cra": "1.0.0",
-    "react-app-rewired": "2.2.1",
-    "react-scripts": "5.0.1",
-    "source-map-explorer": "2.5.3",
-    "stats-webpack-plugin": "0.7.0"
+    "@types/react": "^18.2.15",
+    "@types/react-dom": "^18.2.7",
+    "@vitejs/plugin-react": "^4.0.3",
+    "eslint": "^8.45.0",
+    "eslint-plugin-react": "^7.32.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.3",
+    "vite": "^4.4.5"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-app-rewired build",
-    "analyze": "source-map-explorer 'build/static/js/*.js'",
-    "test": "react-scripts test --env=jsdom"
-  },
-  "browserslist": [
-    ">0.2%",
-    "not dead",
-    "not ie <= 11",
-    "not op_mini all"
-  ]
+    "start": "vite",
+    "build": "vite build",
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview"
+  }
 }
