@@ -6,7 +6,7 @@ import { worker } from "./mocks/browser.js";
 
 worker.start({ waitUntilReady: true });
 const mockedHttpLink = new HttpLink({
-  uri: "http://localhost:3000/graphql",
+  uri: "/graphql",
 });
 
 const url = "wss://uifesi.sse.codesandbox.io/graphql";
