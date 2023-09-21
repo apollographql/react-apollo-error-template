@@ -7,12 +7,10 @@ import {
   ApolloProvider,
   InMemoryCache,
   gql,
-  useQuery,
-  useMutation,
+  useLazyQuery,
 } from "@apollo/client";
 
 import { link } from "./link.js";
-import { Subscriptions } from "./subscriptions.jsx";
 import { Layout } from "./layout.jsx";
 import "./index.css";
 
@@ -25,56 +23,24 @@ const ALL_PEOPLE = gql`
   }
 `;
 
-const ADD_PERSON = gql`
-  mutation AddPerson($name: String) {
-    addPerson(name: $name) {
-      id
-      name
-    }
-  }
-`;
-
 function App() {
   const [name, setName] = useState("");
-  const { loading, data } = useQuery(ALL_PEOPLE);
-
-  const [addPerson] = useMutation(ADD_PERSON, {
-    update: (cache, { data: { addPerson: addPersonData } }) => {
-      const peopleResult = cache.readQuery({ query: ALL_PEOPLE });
-
-      cache.writeQuery({
-        query: ALL_PEOPLE,
-        data: {
-          ...peopleResult,
-          people: [...peopleResult.people, addPersonData],
-        },
-      });
-    },
-  });
+  const [load, result] = useLazyQuery(ALL_PEOPLE);
+  const { loading, data } = result;
 
   return (
     <main>
-      <h3>Home</h3>
-      <div className="add-person">
-        <label htmlFor="name">Name</label>
-        <input
-          type="text"
-          name="name"
-          value={name}
-          onChange={(evt) => setName(evt.target.value)}
-        />
-        <button
-          onClick={() => {
-            addPerson({ variables: { name } });
-            setName("");
-          }}
-        >
-          Add person
-        </button>
-      </div>
       <h2>Names</h2>
       {loading ? (
         <p>Loading…</p>
+      ) : !data ? (
+        <button onClick={async () => {
+          try {
+            await load()
+          } catch (err) {
+            console.error(err)
+          }
+        }}>Load</button>
       ) : (
         <ul>
           {data?.people.map((person) => (
@@ -82,6 +48,7 @@ function App() {
           ))}
         </ul>
       )}
+      <pre>{JSON.stringify(result, ["data", "loading", "called", "error", "networkStatus"], 2)}</pre>
     </main>
   );
 }
@@ -100,7 +67,6 @@ root.render(
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<App />} />
-          <Route path="subscriptions-wslink" element={<Subscriptions />} />
         </Route>
       </Routes>
     </Router>
