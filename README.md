@@ -6,6 +6,10 @@ Unfortunately, describing an error in GitHub is often not enough to truly unders
 
 This repo was created with [`vite`][2] and is appropriate for reproductions of client-rendered React applications. To make changes in the GraphQL schema make sure to look at the `./src/index.jsx` file where we define a GraphQL schema using [GraphQL.js][5] which will run in the browser.
 
+| ☑️  Apollo Client User Survey |
+| :----- |
+| What do you like best about Apollo Client? What needs to be improved? Please tell us by taking a [one-minute survey](https://docs.google.com/forms/d/e/1FAIpQLSczNDXfJne3ZUOXjk9Ursm9JYvhTh1_nFTDfdq3XBAFWCzplQ/viewform?usp=pp_url&entry.1170701325=Apollo+Client&entry.204965213=Readme). Your responses will help us understand Apollo Client usage and allow us to serve you better. |
+
 ## Reproductions with other frameworks
 
 - **Next.js**: see our [`apollographql/next-apollo-example`][3] repository
