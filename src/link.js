@@ -1,9 +1,10 @@
 /*** LINK ***/
-import { graphql, print } from "graphql";
+import { graphql, print, GraphQLError } from "graphql";
 import { ApolloLink, Observable } from "@apollo/client";
 import { createClient } from "graphql-ws";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import { schema } from "./schema.js";
+import { onError } from "@apollo/client/link/error";
 
 function delay(wait) {
   return new Promise((resolve) => setTimeout(resolve, wait));
@@ -36,6 +37,16 @@ const wsLink = new GraphQLWsLink(
   })
 );
 
+const errorLink = onError(({ graphQLErrors }) => {
+  graphQLErrors?.forEach((graphQLError) => {
+    console.error(graphQLError);
+    console.error(
+      graphQLError instanceof Error,
+      graphQLError instanceof GraphQLError
+    );
+  });
+});
+
 const definitionIsSubscription = (d) => {
   return d.kind === "OperationDefinition" && d.operation === "subscription";
 };
@@ -49,3 +60,5 @@ export const link = ApolloLink.split(
   wsLink,
   staticDataLink
 );
+
+export const testLink = ApolloLink.from([errorLink, link]);

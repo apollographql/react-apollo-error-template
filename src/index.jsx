@@ -11,7 +11,7 @@ import {
   useMutation,
 } from "@apollo/client";
 
-import { link } from "./link.js";
+import { testLink } from "./link.js";
 import { Subscriptions } from "./subscriptions.jsx";
 import { Layout } from "./layout.jsx";
 import "./index.css";
@@ -88,7 +88,7 @@ function App() {
 
 const client = new ApolloClient({
   cache: new InMemoryCache(),
-  link,
+  link: testLink,
 });
 
 const container = document.getElementById("root");
