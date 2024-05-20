@@ -1,5 +1,5 @@
 /*** APP ***/
-import React, { useState } from "react";
+import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { createRoot } from "react-dom/client";
 import {
@@ -36,8 +36,8 @@ const ADD_PERSON = gql`
 
 function App() {
   const [name, setName] = useState("");
-  const { loading, data } = useQuery(ALL_PEOPLE);
-
+  const { loading, data, refetch, error } = useQuery(ALL_PEOPLE, {});
+  console.log({ error });
   const [addPerson] = useMutation(ADD_PERSON, {
     update: (cache, { data: { addPerson: addPersonData } }) => {
       const peopleResult = cache.readQuery({ query: ALL_PEOPLE });
@@ -59,7 +59,7 @@ function App() {
         <label htmlFor="name">Name</label>
         <input
           type="text"
-          name="name"
+          id="name"
           value={name}
           onChange={(evt) => setName(evt.target.value)}
         />
@@ -71,13 +71,20 @@ function App() {
         >
           Add person
         </button>
+        <button
+          onClick={() => {
+            refetch();
+          }}
+        >
+          Refetch
+        </button>
       </div>
       <h2>Names</h2>
       {loading ? (
         <p>Loading…</p>
       ) : (
         <ul>
-          {data?.people.map((person) => (
+          {data?.people?.map((person) => (
             <li key={person.id}>{person.name}</li>
           ))}
         </ul>

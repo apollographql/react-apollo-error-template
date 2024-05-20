@@ -5,10 +5,10 @@ import {
   GraphQLID,
   GraphQLString,
   GraphQLList,
-} from 'graphql';
+} from "graphql";
 
 const PersonType = new GraphQLObjectType({
-  name: 'Person',
+  name: "Person",
   fields: {
     id: { type: GraphQLID },
     name: { type: GraphQLString },
@@ -16,23 +16,32 @@ const PersonType = new GraphQLObjectType({
 });
 
 const peopleData = [
-  { id: 1, name: 'John Smith' },
-  { id: 2, name: 'Sara Smith' },
-  { id: 3, name: 'Budd Deey' },
+  { id: 1, name: "John Smith" },
+  { id: 2, name: "Sara Smith" },
+  { id: 3, name: "Budd Deey" },
 ];
 
+let count = 0;
+
 const QueryType = new GraphQLObjectType({
-  name: 'Query',
+  name: "Query",
   fields: {
     people: {
       type: new GraphQLList(PersonType),
-      resolve: () => peopleData,
+      resolve: () => {
+        count++;
+        if (count === 1) {
+          return peopleData;
+        }
+        console.log("testing");
+        return new Error("hello");
+      },
     },
   },
 });
 
 const MutationType = new GraphQLObjectType({
-  name: 'Mutation',
+  name: "Mutation",
   fields: {
     addPerson: {
       type: PersonType,
@@ -47,9 +56,12 @@ const MutationType = new GraphQLObjectType({
 
         peopleData.push(person);
         return person;
-      }
+      },
     },
   },
 });
 
-export const schema = new GraphQLSchema({ query: QueryType, mutation: MutationType });
+export const schema = new GraphQLSchema({
+  query: QueryType,
+  mutation: MutationType,
+});
