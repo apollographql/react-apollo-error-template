@@ -11,7 +11,7 @@ function delay(wait) {
 
 const staticDataLink = new ApolloLink((operation) => {
   return new Observable((observer) => {
-    Promise.then(async () => {
+    Promise.resolve().then(async () => {
       const { query, operationName, variables } = operation;
       await delay(300);
       try {
