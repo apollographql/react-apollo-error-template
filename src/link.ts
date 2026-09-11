@@ -4,8 +4,9 @@ import { ApolloLink, Observable } from "@apollo/client";
 import { createClient } from "graphql-ws";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import { schema } from "./schema.js";
+import { OperationTypeNode } from "graphql";
 
-function delay(wait) {
+function delay(wait: number) {
   return new Promise((resolve) => setTimeout(resolve, wait));
 }
 
@@ -74,16 +75,12 @@ const wsLink = new GraphQLWsLink(
   }),
 );
 
-const definitionIsSubscription = (d) => {
-  return d.kind === "OperationDefinition" && d.operation === "subscription";
-};
-
 // Use directional composition in order to customize the terminating link
 // based on operation type: a WebSocket for subscriptions and our own
 // custom ApolloLink for everything else.
 // For more information, see: https://www.apollographql.com/docs/react/api/link/introduction/#directional-composition
 export const link = ApolloLink.split(
-  (operation) => operation.query.definitions.some(definitionIsSubscription),
+  (operation) => operation.operationType === OperationTypeNode.SUBSCRIPTION,
   wsLink,
   staticDataLink,
 );
