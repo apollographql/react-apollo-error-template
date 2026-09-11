@@ -9,6 +9,7 @@ export default defineConfig([
   globalIgnores(["dist"]),
   {
     files: ["**/*.{ts,tsx}"],
+    ignores: ["./src/types/__generated__/**/*.ts"],
     extends: [
       js.configs.recommended,
       tseslint.configs.recommended,
