@@ -33,6 +33,7 @@ const staticDataLink = new ApolloLink((operation) => {
         });
 
         console.group(label, "response:");
+        console.log("variables:", variables);
         console.log("result:", result);
         console.log("took:", Math.round(performance.now() - now) + "ms");
 
@@ -40,6 +41,7 @@ const staticDataLink = new ApolloLink((operation) => {
         observer.complete();
       } catch (err) {
         console.group(label, "response:");
+        console.log("variables:", variables);
         console.log("took:", Math.round(performance.now() - now) + "ms");
         console.error(err);
 
