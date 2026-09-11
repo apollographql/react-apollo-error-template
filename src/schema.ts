@@ -1,19 +1,6 @@
-/*** SCHEMA ***/
-import {
-  GraphQLSchema,
-  GraphQLObjectType,
-  GraphQLID,
-  GraphQLString,
-  GraphQLList,
-} from "graphql";
-
-const PersonType = new GraphQLObjectType({
-  name: "Person",
-  fields: {
-    id: { type: GraphQLID },
-    name: { type: GraphQLString },
-  },
-});
+import type { Resolvers } from "./types/__generated__/resolvers";
+import { makeExecutableSchema } from "@graphql-tools/schema";
+import typeDefs from "./schema.graphql?raw";
 
 const peopleData = [
   { id: 1, name: "John Smith" },
@@ -21,38 +8,23 @@ const peopleData = [
   { id: 3, name: "Budd Deey" },
 ];
 
-const QueryType = new GraphQLObjectType({
-  name: "Query",
-  fields: {
-    people: {
-      type: new GraphQLList(PersonType),
-      resolve: () => peopleData,
+const resolvers: Resolvers = {
+  Query: {
+    people: () => {
+      return peopleData.map((person) => ({ ...person, id: String(person.id) }));
     },
   },
-});
+  Mutation: {
+    addPerson: (_, { name }) => {
+      const person = {
+        id: peopleData[peopleData.length - 1].id + 1,
+        name,
+      };
 
-const MutationType = new GraphQLObjectType({
-  name: "Mutation",
-  fields: {
-    addPerson: {
-      type: PersonType,
-      args: {
-        name: { type: GraphQLString },
-      },
-      resolve: function (_, { name }) {
-        const person = {
-          id: peopleData[peopleData.length - 1].id + 1,
-          name,
-        };
-
-        peopleData.push(person);
-        return person;
-      },
+      peopleData.push(person);
+      return { ...person, id: String(person.id) };
     },
   },
-});
+};
 
-export const schema = new GraphQLSchema({
-  query: QueryType,
-  mutation: MutationType,
-});
+export const schema = makeExecutableSchema({ typeDefs, resolvers });
