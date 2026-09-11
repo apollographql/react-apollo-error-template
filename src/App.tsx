@@ -35,16 +35,19 @@ export function App() {
   const { loading, data } = useQuery(ALL_PEOPLE);
 
   const [addPerson] = useMutation(ADD_PERSON, {
-    update: (cache, { data: { addPerson: addPersonData } }) => {
+    update: (cache, { data }) => {
+      const addPersonData = data?.addPerson;
       const peopleResult = cache.readQuery({ query: ALL_PEOPLE });
 
-      cache.writeQuery({
-        query: ALL_PEOPLE,
-        data: {
-          ...peopleResult,
-          people: [...peopleResult.people, addPersonData],
-        },
-      });
+      if (addPersonData && peopleResult) {
+        cache.writeQuery({
+          query: ALL_PEOPLE,
+          data: {
+            ...peopleResult,
+            people: [...(peopleResult.people ?? []), addPersonData],
+          },
+        });
+      }
     },
   });
 
