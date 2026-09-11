@@ -3,7 +3,7 @@ import { gql } from "@apollo/client";
 import { useSubscription } from "@apollo/client/react";
 
 const query = gql`
-  subscription {
+  subscription NumberIncremented {
     numberIncremented
   }
 `;
