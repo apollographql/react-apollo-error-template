@@ -2,7 +2,12 @@
 import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { createRoot } from "react-dom/client";
-import { ApolloClient, InMemoryCache, gql } from "@apollo/client";
+import {
+  ApolloClient,
+  InMemoryCache,
+  gql,
+  type TypedDocumentNode,
+} from "@apollo/client";
 import { Defer20220824Handler } from "@apollo/client/incremental";
 import { LocalState } from "@apollo/client/local-state";
 import { ApolloProvider, useMutation, useQuery } from "@apollo/client/react";
@@ -11,17 +16,27 @@ import { link } from "./link.js";
 import { Subscriptions } from "./subscriptions.jsx";
 import { Layout } from "./layout.jsx";
 import "./index.css";
+import type {
+  AddPersonMutation,
+  AddPersonMutationVariables,
+  AllPeopleQuery,
+  AllPeopleQueryVariables,
+} from "./types/__generated__/graphql.js";
 
-const ALL_PEOPLE = gql`
-  query AllPeople {
-    people {
-      id
-      name
+const ALL_PEOPLE: TypedDocumentNode<AllPeopleQuery, AllPeopleQueryVariables> =
+  gql`
+    query AllPeople {
+      people {
+        id
+        name
+      }
     }
-  }
-`;
+  `;
 
-const ADD_PERSON = gql`
+const ADD_PERSON: TypedDocumentNode<
+  AddPersonMutation,
+  AddPersonMutationVariables
+> = gql`
   mutation AddPerson($name: String) {
     addPerson(name: $name) {
       id
@@ -85,7 +100,7 @@ function App() {
 const client = new ApolloClient({
   cache: new InMemoryCache(),
   link,
-  localState: new LocalState({}),
+  localState: new LocalState(),
   incrementalHandler: new Defer20220824Handler(),
 });
 

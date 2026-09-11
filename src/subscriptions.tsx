@@ -1,8 +1,15 @@
-import { gql } from "@apollo/client";
+import { gql, type TypedDocumentNode } from "@apollo/client";
 
 import { useSubscription } from "@apollo/client/react";
+import type {
+  NumberIncrementedSubscription,
+  NumberIncrementedSubscriptionVariables,
+} from "./types/__generated__/graphql";
 
-const query = gql`
+const query: TypedDocumentNode<
+  NumberIncrementedSubscription,
+  NumberIncrementedSubscriptionVariables
+> = gql`
   subscription NumberIncremented {
     numberIncremented
   }
