@@ -12,7 +12,17 @@ function delay(wait) {
 const staticDataLink = new ApolloLink((operation) => {
   return new Observable((observer) => {
     Promise.resolve().then(async () => {
-      const { query, operationName, variables } = operation;
+      const { query, operationName, operationType, variables, extensions } =
+        operation;
+      const label = `${operationType} ${operationName}`;
+      const now = performance.now();
+
+      console.group(label, "request:");
+      console.log("variables:", variables);
+      console.log("extensions:", extensions);
+      console.log("context:", operation.getContext());
+      console.groupEnd();
+
       await delay(300);
       try {
         const result = await graphql({
@@ -21,11 +31,21 @@ const staticDataLink = new ApolloLink((operation) => {
           variableValues: variables,
           operationName,
         });
+
+        console.group(label, "response:");
+        console.log("result:", result);
+        console.log("took:", Math.round(performance.now() - now) + "ms");
+
         observer.next(result);
         observer.complete();
       } catch (err) {
+        console.group(label, "response:");
+        console.log("took:", Math.round(performance.now() - now) + "ms");
+        console.error(err);
+
         observer.error(err);
       }
+      console.groupEnd();
     });
   });
 });
