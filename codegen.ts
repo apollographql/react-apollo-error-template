@@ -1,11 +1,11 @@
 import type { CodegenConfig } from "@graphql-codegen/cli";
 import type { TypeScriptDocumentsPluginConfig } from "@graphql-codegen/typescript-operations";
+import type { TypeScriptResolversPluginConfig } from "@graphql-codegen/typescript-resolvers";
 
 const config: CodegenConfig = {
   overwrite: true,
   schema: "./src/schema.graphql",
   documents: ["src/**/*.{ts,tsx}"],
-  // Don't exit with non-zero status when there are no documents
   ignoreNoDocuments: true,
   hooks: {
     afterAllFileWrite: ["prettier --write"],
@@ -19,6 +19,13 @@ const config: CodegenConfig = {
         dedupeOperationSuffix: true,
         defaultScalarType: "unknown",
       } satisfies TypeScriptDocumentsPluginConfig,
+    },
+    "./src/types/__generated__/resolvers.ts": {
+      plugins: ["typescript", "typescript-resolvers"],
+      config: {
+        defaultScalarType: "unknown",
+        useTypeImports: true,
+      } satisfies TypeScriptResolversPluginConfig,
     },
   },
 };
