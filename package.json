@@ -5,11 +5,11 @@
   "license": "MIT",
   "type": "module",
   "dependencies": {
-    "@apollo/client": "4.0.3",
-    "graphql": "16.11.0",
+    "@apollo/client": "4.2.12",
+    "graphql": "16.14.2",
     "graphql-ws": "6.0.6",
-    "react": "19.1.1",
-    "react-dom": "19.1.1",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
     "react-router-dom": "6.30.0"
   },
   "devDependencies": {
