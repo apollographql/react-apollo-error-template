@@ -1,5 +1,5 @@
 /*** APP ***/
-import React, { useState } from "react";
+import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { createRoot } from "react-dom/client";
 import { ApolloClient, InMemoryCache, gql } from "@apollo/client";
@@ -102,5 +102,5 @@ root.render(
         </Route>
       </Routes>
     </Router>
-  </ApolloProvider>
+  </ApolloProvider>,
 );

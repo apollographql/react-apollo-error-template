@@ -35,7 +35,7 @@ const url = "wss://uifesi.sse.codesandbox.io/graphql";
 const wsLink = new GraphQLWsLink(
   createClient({
     url,
-  })
+  }),
 );
 
 const definitionIsSubscription = (d) => {
@@ -49,5 +49,5 @@ const definitionIsSubscription = (d) => {
 export const link = ApolloLink.split(
   (operation) => operation.query.definitions.some(definitionIsSubscription),
   wsLink,
-  staticDataLink
+  staticDataLink,
 );

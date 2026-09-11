@@ -4,7 +4,10 @@ import { Defer20220824Handler } from "@apollo/client/incremental";
 import { HttpLink } from "@apollo/client";
 declare module "@apollo/client" {
   export interface TypeOverrides
-    extends GraphQLCodegenDataMasking.TypeOverrides,
+    extends
+      GraphQLCodegenDataMasking.TypeOverrides,
       Defer20220824Handler.TypeOverrides {}
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   export interface DefaultContext extends HttpLink.ContextOptions {}
 }
