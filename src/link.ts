@@ -9,20 +9,39 @@ function delay(wait) {
   return new Promise((resolve) => setTimeout(resolve, wait));
 }
 
+function logRequest(operation: ApolloLink.Operation) {
+  console.group(operation.operationType, operation.operationName, "request:");
+  console.log("variables:", operation.variables);
+  console.log("extensions:", operation.extensions);
+  console.log("context:", operation.getContext());
+  console.groupEnd();
+}
+
+function logResponse(
+  operation: ApolloLink.Operation,
+  initialTimestamp: number,
+  result: { ok: true; result: unknown } | { ok: false; error: unknown },
+) {
+  console.group(operation.operationType, operation.operationName, "response:");
+  console.log("variables:", operation.variables);
+
+  if (result.ok) {
+    console.log("result:", result.result);
+  } else {
+    console.error(result.error);
+  }
+
+  console.log("took:", Math.round(performance.now() - initialTimestamp) + "ms");
+  console.groupEnd();
+}
+
 const staticDataLink = new ApolloLink((operation) => {
   return new Observable((observer) => {
     Promise.resolve().then(async () => {
-      const { query, operationName, operationType, variables, extensions } =
-        operation;
-      const label = `${operationType} ${operationName}`;
-      const now = performance.now();
+      const { query, operationName, variables } = operation;
+      const timestamp = performance.now();
 
-      console.group(label, "request:");
-      console.log("variables:", variables);
-      console.log("extensions:", extensions);
-      console.log("context:", operation.getContext());
-      console.groupEnd();
-
+      logRequest(operation);
       await delay(300);
       try {
         const result = await graphql({
@@ -32,22 +51,17 @@ const staticDataLink = new ApolloLink((operation) => {
           operationName,
         });
 
-        console.group(label, "response:");
-        console.log("variables:", variables);
-        console.log("result:", result);
-        console.log("took:", Math.round(performance.now() - now) + "ms");
+        logResponse(operation, timestamp, { ok: true, result });
 
         observer.next(result);
         observer.complete();
       } catch (err) {
-        console.group(label, "response:");
-        console.log("variables:", variables);
-        console.log("took:", Math.round(performance.now() - now) + "ms");
-        console.error(err);
-
+        logResponse(operation, timestamp, {
+          ok: false,
+          error: err,
+        });
         observer.error(err);
       }
-      console.groupEnd();
     });
   });
 });
