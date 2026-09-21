@@ -5,7 +5,7 @@
   "license": "MIT",
   "type": "module",
   "dependencies": {
-    "@apollo/client": "4.2.12",
+    "@apollo/client": "4.3.1",
     "@graphql-tools/schema": "^10.1.1",
     "graphql": "16.14.2",
     "graphql-ws": "6.0.6",
